@@ -15,13 +15,43 @@ sql_username = "pokemon_card_collection"
 sql_password = "pokemon_card_collection"
 sql_database = "pokemon_card_collection"
 
+insert_card_sql = """
+INSERT INTO `pokemon_card_collection`.`card`
+(`id`, `set_id`, `number`, `name`, `supertype`, `hp`, `convertedRetreatCost`, `artist`,`rarity`,
+`flavorText`,`legality_unlimited`,`legality_standard`,`legality_expanded`,`image_small`,`image_large`)
+VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) as new
+ON DUPLICATE KEY UPDATE
+	name=new.name, supertype=new.supertype, hp=new.hp, convertedRetreatCost=new.convertedRetreatCost,artist=new.artist,rarity=new.rarity,
+	flavorText=new.flavorText,legality_unlimited=new.legality_unlimited,legality_standard=new.legality_standard,
+	legality_expanded=new.legality_expanded,image_small=new.image_small,image_large=new.image_large
+
+"""
+
 
 print("Connecting to mysql")
 import mysql.connector
 db=mysql.connector.connect(host=sql_host,user=sql_username,
                   passwd=sql_password,db=sql_database)
-cursor = db.cursor()
+cursor = db.cursor(dictionary=True)
 print("Done")
+
+
+#MySQL Functions
+def get_query_result(sql):
+    cursor.execute(sql)
+    kek =  cursor.fetchall()
+    return kek
+
+
+
+
+
+
+
+
+
+
+
 
 def load_pokedex():
     # Load Pokemon
@@ -61,6 +91,7 @@ def load_sets():
     for set in data:
         insert_values = [
             set['id'],
+            set['id'],
             set['name'],
             set['series'],
             set['printedTotal'],
@@ -76,22 +107,65 @@ def load_sets():
         ]
         cursor.execute(set_sql, insert_values)
 
-        print("Done")
+    db.commit()
+    print("Done")
 
 def load_cards():
-    for filename in os.listdir(os.path.join(tcg_json_destination_path, 'pokemon-tcg-data-master/cards/en/')):
-        full_filename = os.path.join(tcg_json_destination_path, 'pokemon-tcg-data-master/cards/en/', filename)
-        with open(os.path.join(tcg_json_destination_path, 'pokemon-tcg-data-master/sets/en.json')) as json_file:
-            data = json.load(json_file)
+    type_insert_sql = "INSERT IGNORE INTO `pokemon_card_collection`.`types` (`name`) VALUES (%s);"
+    subtype_insert_sql = "INSERT IGNORE INTO `pokemon_card_collection`.`subtypes` (`name`) VALUES (%s);"
 
-        for card in data:
-            ass = 1
-            # types
+    # Sets to loop through
+    sets = get_query_result("SELECT * FROM `pokemon_card_collection`.`sets`")
+    # Current types, to check if we need to insert a new type
+    saved_types = get_query_result("SELECT * FROM `pokemon_card_collection`.`types`")
+    saved_subtypes = get_query_result("SELECT * FROM `pokemon_card_collection`.`subtypes`")
 
-            # subtype
+    i = 1
+    for set in sets:
+        with open(os.path.join(tcg_json_destination_path, 'pokemon-tcg-data-master/cards/en/', "{}.json".format(set['id']))) as json_file:
+            cards = json.load(json_file)
+
+        for card in cards:
+            # Check if any types are new
+            if 'types' in card.keys():
+                for type in card['types']:
+                    if not any(saved_type['name'] == type for saved_type in saved_types):
+                        cursor.execute(type_insert_sql, (type,))
+                        db.commit()
+                        saved_types = get_query_result("SELECT * FROM `pokemon_card_collection`.`types`")
+
+            # Check if any subtypes are new
+            if 'subtypes' in card.keys():
+                for subtype in card['subtypes']:
+                    if not any(saved_subtype['name'] == subtype for saved_subtype in saved_subtypes):
+                        cursor.execute(subtype_insert_sql, (subtype,))
+                        db.commit()
+                        saved_subtypes = get_query_result("SELECT * FROM `pokemon_card_collection`.`subtypes`")
+
 
             # card
+            # (`id`, `set_id`, `number`, `name`, `supertype`, `hp`, `convertedRetreatCost`, `artist`, `rarity`,
+            #  `flavorText`, `legality_unlimited`, `legality_standard`, `legality_expanded`, `image_small`, `image_large`)
 
+            card_insert_values = [
+                card['id'],
+                set['id'],
+                card['number'],
+                card['name'],
+                card['supertype'],
+                None if 'hp' not in card else card['hp'],
+                None if 'convertedRetreatCost' not in card else card['convertedRetreatCost'],
+                None if 'artist' not in card else card['artist'],
+                None if 'rarity' not in card else card['rarity'],
+                None if 'flavorText' not in card else card['flavorText'],
+                None if 'unlimited' not in card['legalities'] else card['legalities']['unlimited'],
+                None if 'standard' not in card['legalities'] else card['legalities']['standard'],
+                None if 'expanded' not in card['legalities'] else card['legalities']['expanded'],
+                card['images']['small'],
+                card['images']['large'],
+            ]
+            cursor.execute(insert_card_sql, card_insert_values)
+            kek = 1
             # card_subtypes
 
             # card_types
@@ -99,12 +173,14 @@ def load_cards():
             # card_evolvesTo
 
             # card_nationalPokedexNumbers
-
+        print("{}/{}".format(i, len(sets)))
+        i = i + 1
+    db.commit()
 
 
 def main():
     # get_tcg_data()
-    # load_sets()
+    #load_sets()
     load_cards()
 
 if __name__ == "__main__":
