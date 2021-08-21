@@ -8,10 +8,13 @@ import Note from "./Note";
 
 class NotesList extends Component {
   componentDidMount() {
+    console.log("notes componentDidMount")
     this.props.getNotes();
+
   }
 
   render() {
+    console.log("Render")
     const { notes } = this.props.notes;
 
     if (notes.length === 0) {

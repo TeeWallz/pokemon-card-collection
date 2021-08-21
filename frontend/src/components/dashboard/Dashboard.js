@@ -9,6 +9,9 @@ import { logout } from "../login/LoginActions";
 import NotesList from "../notes/NotesList";
 import AddNote from "../notes/AddNote";
 
+import CardsList from "../cards/CardsList";
+import SetsList from "../sets/SetsList";
+
 class Dashboard extends Component {
   onLogout = () => {
     this.props.logout();
@@ -29,8 +32,10 @@ class Dashboard extends Component {
           </Navbar.Collapse>
         </Navbar>
         <Container>
-          <NotesList />
-          <AddNote />
+          <SetsList />
+          {/*<NotesList />*/}
+          {/*<CardsList />*/}
+          {/*<AddNote />*/}
         </Container>
       </div>
     );

@@ -42,19 +42,24 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'djoser',
     'corsheaders',
+    'django_filters',
     #
     'apps.accounts',
-    'apps.notes'
+    'apps.notes',
+    'apps.pokemon_collection',
 ]
 
 #configure DRF
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-    ]
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 300,
 }
 
 # configure Djoser
@@ -128,11 +133,11 @@ WSGI_APPLICATION = 'server.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': ,
-        'USER': os.environ.get("DJANGO_MYSQL_USER", default=""),
-        'PASSWORD': os.environ.get("DJANGO_MYSQL_PASSWORD", default=""),
+        'NAME': 'pokemon_card_collection',
+        'USER': 'pokemon_card_collection',
+        'PASSWORD': 'pokemon_card_collection',
         # 'HOST': 'mysql.waller.rocks',   # Or an IP Address that your DB is hosted on
-        'HOST': os.environ.get("REACT_APP_MYSQL_IP", default="ass"),   # Or an IP Address that your DB is hosted on
+        'HOST': '127.0.0.1',   # Or an IP Address that your DB is hosted on
         # 'HOST': '172.26.9.76',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
     }

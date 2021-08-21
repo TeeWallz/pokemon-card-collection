@@ -1,14 +1,14 @@
 import axios from "axios";
 import { toastOnError } from "../../utils/Utils";
-import { GET_NOTES, ADD_NOTE, DELETE_NOTE, UPDATE_NOTE } from "./NotesTypes";
+import { GET_CARDS, ADD_CARD, DELETE_CARD, UPDATE_CARD } from "./CardsTypes";
 
-export const getNotes = () => dispatch => {
-    console.log("getNotes!")
+export const getCards = () => dispatch => {
+    console.log("getCards!")
   axios
-    .get("/api/v1/notes/")
+    .get("/api/v1/cards/")
     .then(response => {
       dispatch({
-        type: GET_NOTES,
+        type: GET_CARDS,
         payload: response.data.results
       });
     })
@@ -17,12 +17,12 @@ export const getNotes = () => dispatch => {
     });
 };
 
-export const addNote = note => dispatch => {
+export const addCard = card => dispatch => {
   axios
-    .post("/api/v1/notes/", note)
+    .post("/api/v1/cards/", card)
     .then(response => {
       dispatch({
-        type: ADD_NOTE,
+        type: ADD_CARD,
         payload: response.data
       });
     })
@@ -31,12 +31,12 @@ export const addNote = note => dispatch => {
     });
 };
 
-export const deleteNote = id => dispatch => {
+export const deleteCard = id => dispatch => {
   axios
-    .delete(`/api/v1/notes/${id}/`)
+    .delete(`/api/v1/cards/${id}/`)
     .then(response => {
       dispatch({
-        type: DELETE_NOTE,
+        type: DELETE_CARD,
         payload: id
       });
     })
@@ -45,12 +45,12 @@ export const deleteNote = id => dispatch => {
     });
 };
 
-export const updateNote = (id, note) => dispatch => {
+export const updateCard = (id, card) => dispatch => {
   axios
-    .patch(`/api/v1/notes/${id}/`, note)
+    .patch(`/api/v1/cards/${id}/`, card)
     .then(response => {
       dispatch({
-        type: UPDATE_NOTE,
+        type: UPDATE_CARD,
         payload: response.data
       });
     })
