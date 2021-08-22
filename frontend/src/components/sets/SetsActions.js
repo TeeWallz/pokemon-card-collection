@@ -16,3 +16,21 @@ export const getSets = () => dispatch => {
       toastOnError(error);
     });
 };
+
+export const createCollectionFromSet = () => dispatch => {
+    console.log("createCollectionFromSet!")
+  axios
+    .get("/api/v1/sets/")
+    .then(response => {
+      dispatch({
+        type: GET_CARDS,
+        payload: response.data.results
+      });
+    })
+    .catch(error => {
+      toastOnError(error);
+    });
+};
+
+
+

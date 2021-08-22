@@ -24,7 +24,9 @@ class Set extends Component {
             <td>{set.series}</td>
             <td>{set.releasedate}</td>
             <td>{set.printedtotal}</td>
-            <td>{set.total}</td>
+            <td>
+                <Button>Start Collection</Button>
+            </td>
         </tr>
     );
   }

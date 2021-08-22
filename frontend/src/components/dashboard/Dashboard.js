@@ -11,6 +11,7 @@ import AddNote from "../notes/AddNote";
 
 import CardsList from "../cards/CardsList";
 import SetsList from "../sets/SetsList";
+import AddCollection from "../collection/AddCollection";
 
 class Dashboard extends Component {
   onLogout = () => {
@@ -32,7 +33,8 @@ class Dashboard extends Component {
           </Navbar.Collapse>
         </Navbar>
         <Container>
-          <SetsList />
+          <AddCollection/>
+          {/*<SetsList />*/}
           {/*<NotesList />*/}
           {/*<CardsList />*/}
           {/*<AddNote />*/}
