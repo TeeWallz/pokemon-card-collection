@@ -1,6 +1,6 @@
 import axios from "axios";
 import { toastOnError } from "../../utils/Utils";
-import { GET_CARDS} from "./SetsTypes";
+import { GET_CARDS } from "./SetsTypes";
 
 export const getSets = () => dispatch => {
     console.log("getSets!")

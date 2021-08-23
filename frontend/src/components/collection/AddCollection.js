@@ -9,11 +9,17 @@ import ToggleButton from "react-bootstrap/ToggleButton";
 import Dropdown from "react-bootstrap/Dropdown";
 import Select from 'react-select'
 
+import Collection from "./Collection";
+import {getSets} from "../sets/SetsActions"
+
 const options = [
-    { value: 'chocolate', label: <div><img src={"https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png"} height="30px" width="30px"/>Chocolate </div> },
-    { value: 'strawberry', label: 'Strawberry' },
-    { value: 'vanilla', label: 'Vanilla' },
-  ];
+    {value: 'chocolate',
+        label: <div><img src={"https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png"}
+                         height="30px" width="30px"/>Chocolate </div>
+    },
+    {value: 'strawberry', label: 'Strawberry'},
+    {value: 'vanilla', label: 'Vanilla'},
+];
 
 
 class AddCollection extends Component {
@@ -25,20 +31,33 @@ class AddCollection extends Component {
             setCollectionDropdown: '',
             CustomMenu: '',
             SetSelection: '',
+            sets: [],
         };
+        this.props.getSets();
     }
 
     onChange = e => {
+        console.log(e)
         this.setState({[e.target.name]: e.target.value}, () => {
             console.log(this.state)
         });
     };
 
     onChangeCollectionSource = e => {
+        console.log(e)
         this.setState({'collectionSource': e}, () => {
             console.log(this.state)
         });
     };
+
+    onChangeSetSelection = e => {
+        console.log(e);
+        // let setName = this.props.sets.filter(obj => obj.name === e.value)[0].name;
+        this.setState({'collectionName': e.value}, () => {
+            console.log(this.state)
+            this.forceUpdate();
+        });
+    }
 
 
     onAddClick = () => {
@@ -49,16 +68,32 @@ class AddCollection extends Component {
     };
 
     CollectionSelector = () => {
+        let kek = 1;
+        console.log(this.props)
         let formContents = (<React.Fragment></React.Fragment>);
 
         switch (this.state.collectionSource) {
             case 'set':
+                // if(this.props.sets)
+                // const options = [
+                //     {value: 'chocolate',
+                //         label: <div><img
+                //             src={"https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png"}
+                //             height="30px" width="30px"/>Chocolate </div>
+                //     },
+                //     {value: 'strawberry', label: 'Strawberry'},
+                //     {value: 'vanilla', label: 'Vanilla'},
+                // ];
+                let items = this.props.sets.map(set => {
+                    return {value: set.name, label:
+                            <span>
+                                <img style={{width:"15px"}} src={set.symbol} /> {set.name} - {set.printedtotal} Cards
+                            </span>
+                    }
+                });
+                console.log(items)
                 formContents = (
-                    <select>
-                        <option value="A">Apple</option>
-                        <option value="B">Banana</option>
-                        <option value="C">Cranberry</option>
-                    </select>
+                    <Select onChange={this.onChangeSetSelection}                        options={items}/>
                 )
                 break;
             case 'pokemon':
@@ -137,17 +172,19 @@ class AddCollection extends Component {
 
 
     render() {
+
+
         return (
             <div>
-                <h2>Add new collection /{this.collectionName}/</h2>
+                <h2>Add new collection /{this.state.collectionName}/</h2>
                 <Form>
                     <Form.Group controlId="contentId">
                         <Form.Group className="mb-3" controlId="formBasicEmail">
-                            <Form.Label>Collection Name {this.collectionName}</Form.Label>
+                            <Form.Label>Collection Name {this.state.collectionName}</Form.Label>
                             <Form.Control type="text"
                                           placeholder="Enter name"
                                           name="collectionName"
-                                          value={this.collectionName}
+                                          value={this.state.collectionName}
                                           onChange={this.onChange}/>
                             {/*<Form.Text className="text-muted">*/}
                             {/*    We'll never share your email with anyone else.*/}
@@ -177,10 +214,8 @@ class AddCollection extends Component {
                             </div>
                         </Form.Group>
 
-                        {/*<this.CollectionSelector/>*/}
+                        <this.CollectionSelector props={this.props.sets}/>
 
-                        <Select
-                                options={options}/>
 
                     </Form.Group>
                 </Form>
@@ -192,11 +227,24 @@ class AddCollection extends Component {
         );
     }
 }
+//
+// AddCollection.propTypes = {
+//     addCollection: PropTypes.func.isRequired
+// };
 
-AddCollection.propTypes = {
-    addCollection: PropTypes.func.isRequired
-};
+const mapStateToProps = (state) => {
+    console.log(state);
 
-const mapStateToProps = state => ({});
+    return {
+        // userInfo: state.THE_SPECIFIC_REDUCER.userInfo,
+        // loading: state.THE_SPECIFIC_REDUCER.loading,
+        // error: state.THE_SPECIFIC_REDUCER.error
+        sets: state.sets.sets
+    };
+}
 
-export default connect(mapStateToProps, {addCollection})(withRouter(AddCollection));
+// export default connect(mapStateToProps, {addCollection})(withRouter(AddCollection));
+
+export default connect(mapStateToProps, {
+    getSets
+})(withRouter(AddCollection));
