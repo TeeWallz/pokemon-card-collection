@@ -8,18 +8,32 @@ import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
 import ToggleButton from "react-bootstrap/ToggleButton";
 import Dropdown from "react-bootstrap/Dropdown";
 import Select from 'react-select'
-
+import pokemon from 'pokemontcgsdk'
 import Collection from "./Collection";
 import {getSets} from "../sets/SetsActions"
+// import {getCardsFilter} from "../cards/CardsActions";
+import ListGroup from "react-bootstrap/ListGroup";
+import axios from "axios";
+import Col from "react-bootstrap/Col";
 
-const options = [
-    {value: 'chocolate',
-        label: <div><img src={"https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png"}
-                         height="30px" width="30px"/>Chocolate </div>
-    },
-    {value: 'strawberry', label: 'Strawberry'},
-    {value: 'vanilla', label: 'Vanilla'},
-];
+
+import {toastOnError} from "../../utils/Utils";
+import {getCardsFilter} from "../cards/CardsActions";
+import CardsList from "../cards/CardsList";
+import {getPokemon} from "../database_objects/pokemon/PokemonsActions";
+
+
+pokemon.configure({apiKey: '4440c304-d5c0-4939-b533-5befa084795c'})
+
+const pokemon_list_style = {
+    maxHeight: '300px',
+    marginBottom: '10px',
+    overflow: 'scroll',
+    overflowScrolling: "touch",
+    WebkitOverflowScrolling: "touch",
+}
+
+
 
 
 class AddCollection extends Component {
@@ -27,13 +41,15 @@ class AddCollection extends Component {
         super(props);
         this.state = {
             collectionName: "",
-            collectionSource: 'set',
+            collectionSource: 'pokemon',
             setCollectionDropdown: '',
             CustomMenu: '',
             SetSelection: '',
             sets: [],
+            currentQuery: '',
         };
         this.props.getSets();
+        this.props.getPokemon();
     }
 
     onChange = e => {
@@ -45,26 +61,40 @@ class AddCollection extends Component {
 
     onChangeCollectionSource = e => {
         console.log(e)
-        this.setState({'collectionSource': e}, () => {
+        this.setState({'collectionSource': e, 'currentQuery': ''}, () => {
             console.log(this.state)
         });
     };
 
     onChangeSetSelection = e => {
         console.log(e);
-        // let setName = this.props.sets.filter(obj => obj.name === e.value)[0].name;
-        this.setState({'collectionName': e.value}, () => {
+        let query = '?set=' + e.value + '&orderBy=number';
+
+        this.props.getCardsFilter(query, () => {
+            console.log("FUCK");
+
+        })
+
+        let setName = this.props.sets.filter(obj => obj.id === e.value)[0].name;
+        this.setState({'collectionName': setName, 'SetSelection': e.value, 'currentQuery': query}, () => {
             console.log(this.state)
-            this.forceUpdate();
+            // this.forceUpdate();
         });
     }
 
 
     onAddClick = () => {
+        if (this.state.collectionSource == 'set') {
+            let cards = 1;
+        }
+
+
         const collection = {
-            content: this.state.content
+            collectionName: this.state.collectionName,
+            collectionSource: this.state.collectionSource,
+            query: this.state.SetSelection,
         };
-        this.props.addCollection(collection);
+        addCollection(collection);
     };
 
     CollectionSelector = () => {
@@ -74,33 +104,69 @@ class AddCollection extends Component {
 
         switch (this.state.collectionSource) {
             case 'set':
-                // if(this.props.sets)
-                // const options = [
-                //     {value: 'chocolate',
-                //         label: <div><img
-                //             src={"https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png"}
-                //             height="30px" width="30px"/>Chocolate </div>
-                //     },
-                //     {value: 'strawberry', label: 'Strawberry'},
-                //     {value: 'vanilla', label: 'Vanilla'},
-                // ];
                 let items = this.props.sets.map(set => {
-                    return {value: set.name, label:
+                    return {
+                        value: set.id, label:
                             <span>
-                                <img style={{width:"15px"}} src={set.symbol} /> {set.name} - {set.printedtotal} Cards
+                                <img style={{width: "15px"}} src={set.symbol}/> {set.name} - {set.printedtotal} Cards
                             </span>
                     }
                 });
                 console.log(items)
                 formContents = (
-                    <Select onChange={this.onChangeSetSelection}                        options={items}/>
+                    <Select onChange={this.onChangeSetSelection} options={items}/>
                 )
                 break;
             case 'pokemon':
-                formContents = (<Form.Group className="mb-3" controlId="formFromSet">
-                    <Form.Label>Collection From P</Form.Label>
-                    Dropdown
-                </Form.Group>)
+                formContents = (
+                    <Form.Group className="mb-3" controlId="formFromSet">
+                        {/*<Form.Label>Collection From P</Form.Label>*/}
+
+                        <Form.Row>
+                            <Form.Group as={Col} sm={5}>
+                                <ListGroup defaultActiveKey="#link1" style={pokemon_list_style}>
+                                    <ListGroup.Item action href="#link1">
+                                        Link 1
+                                    </ListGroup.Item>
+                                    <ListGroup.Item action >
+                                        This one is a button
+                                    </ListGroup.Item>
+                                    <ListGroup.Item action >
+                                        This one is a button
+                                    </ListGroup.Item>
+                                    <ListGroup.Item action >
+                                        This one is a button
+                                    </ListGroup.Item>
+                                    <ListGroup.Item action >
+                                        This one is a button
+                                    </ListGroup.Item>
+                                    <ListGroup.Item action >
+                                        This one is a button
+                                    </ListGroup.Item>
+
+                                </ListGroup>
+                            </Form.Group>
+                            <Form.Group as={Col} sm={2}>
+                                Button
+                            </Form.Group>
+                            <Form.Group as={Col} sm={5}>
+                                <ListGroup defaultActiveKey="#link1" style={pokemon_list_style}>
+                                    <ListGroup.Item action href="#link1">
+                                        Link 1
+                                    </ListGroup.Item>
+                                    <ListGroup.Item action href="#link2" disabled>
+                                        Link 2
+                                    </ListGroup.Item>
+                                    <ListGroup.Item action >
+                                        This one is a button
+                                    </ListGroup.Item>
+                                </ListGroup>
+                            </Form.Group>
+                        </Form.Row>
+
+
+                    </Form.Group>
+                )
                 break;
             case 'artist':
                 formContents = (<Form.Group className="mb-3" controlId="formFromSet">
@@ -172,6 +238,11 @@ class AddCollection extends Component {
 
 
     render() {
+        let cards_to_render = [];
+
+        if (this.state.currentQuery in this.props.cards.set_cards) {
+            cards_to_render = this.props.cards.set_cards[this.state.currentQuery]
+        }
 
 
         return (
@@ -220,6 +291,8 @@ class AddCollection extends Component {
                     </Form.Group>
                 </Form>
 
+                <CardsList cards={cards_to_render}/>
+
                 <Button variant="success" onClick={this.onAddClick}>
                     Add collection
                 </Button>
@@ -227,6 +300,7 @@ class AddCollection extends Component {
         );
     }
 }
+
 //
 // AddCollection.propTypes = {
 //     addCollection: PropTypes.func.isRequired
@@ -239,12 +313,14 @@ const mapStateToProps = (state) => {
         // userInfo: state.THE_SPECIFIC_REDUCER.userInfo,
         // loading: state.THE_SPECIFIC_REDUCER.loading,
         // error: state.THE_SPECIFIC_REDUCER.error
-        sets: state.sets.sets
+        sets: state.sets.sets,
+        cards: state.cards,
+        pokemon: state.pokemon,
     };
 }
 
 // export default connect(mapStateToProps, {addCollection})(withRouter(AddCollection));
 
 export default connect(mapStateToProps, {
-    getSets
+    getSets, getCardsFilter, getPokemon
 })(withRouter(AddCollection));

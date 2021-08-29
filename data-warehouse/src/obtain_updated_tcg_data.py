@@ -17,11 +17,11 @@ sql_database = "pokemon_card_collection"
 
 insert_card_sql = """
 INSERT INTO `pokemon_card_collection`.`card`
-(`id`, `set_id`, `number`, `name`, `supertype`, `hp`, `convertedRetreatCost`, `artist`,`rarity`,
+(`id`, `set_id`, set_order_number, `number`, `name`, `supertype`, `hp`, `convertedRetreatCost`, `artist`,`rarity`,
 `flavorText`,`legality_unlimited`,`legality_standard`,`legality_expanded`,`image_small`,`image_large`)
-VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) as new
+VALUES (%s, %s,%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) as new
 ON DUPLICATE KEY UPDATE
-	name=new.name, supertype=new.supertype, hp=new.hp, convertedRetreatCost=new.convertedRetreatCost,artist=new.artist,rarity=new.rarity,
+	name=new.name, set_order_number=new.set_order_number, supertype=new.supertype, hp=new.hp, convertedRetreatCost=new.convertedRetreatCost,artist=new.artist,rarity=new.rarity,
 	flavorText=new.flavorText,legality_unlimited=new.legality_unlimited,legality_standard=new.legality_standard,
 	legality_expanded=new.legality_expanded,image_small=new.image_small,image_large=new.image_large
 
@@ -41,16 +41,6 @@ def get_query_result(sql):
     cursor.execute(sql)
     kek =  cursor.fetchall()
     return kek
-
-
-
-
-
-
-
-
-
-
 
 
 def load_pokedex():
@@ -91,7 +81,6 @@ def load_sets():
     for set in data:
         insert_values = [
             set['id'],
-            set['id'],
             set['name'],
             set['series'],
             set['printedTotal'],
@@ -125,7 +114,9 @@ def load_cards():
         with open(os.path.join(tcg_json_destination_path, 'pokemon-tcg-data-master/cards/en/', "{}.json".format(set['id']))) as json_file:
             cards = json.load(json_file)
 
+        set_order_number = 0
         for card in cards:
+            set_order_number = set_order_number + 1
             # Check if any types are new
             if 'types' in card.keys():
                 for type in card['types']:
@@ -143,13 +134,10 @@ def load_cards():
                         saved_subtypes = get_query_result("SELECT * FROM `pokemon_card_collection`.`subtypes`")
 
 
-            # card
-            # (`id`, `set_id`, `number`, `name`, `supertype`, `hp`, `convertedRetreatCost`, `artist`, `rarity`,
-            #  `flavorText`, `legality_unlimited`, `legality_standard`, `legality_expanded`, `image_small`, `image_large`)
-
             card_insert_values = [
                 card['id'],
                 set['id'],
+                set_order_number,
                 card['number'],
                 card['name'],
                 card['supertype'],
@@ -179,8 +167,8 @@ def load_cards():
 
 
 def main():
-    # get_tcg_data()
-    #load_sets()
+    get_tcg_data()
+    load_sets()
     load_cards()
 
 if __name__ == "__main__":

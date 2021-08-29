@@ -1,7 +1,8 @@
-import { GET_CARDS, ADD_CARD, UPDATE_CARD, DELETE_CARD } from "./CardsTypes";
+import {GET_CARDS, ADD_CARD, UPDATE_CARD, DELETE_CARD, GET_FILTER_CARDS} from "./CardsTypes";
 
 const initialState = {
-  cards: []
+  cards: [],
+  set_cards: {},
 };
 
 export const cardsReducer = (state = initialState, action) => {
@@ -32,7 +33,29 @@ export const cardsReducer = (state = initialState, action) => {
         ...state,
         cards: updatedCards
       };
+    case GET_FILTER_CARDS:
+
+      let copy_set_cards = { ...state.set_cards}; //create a new copy
+      copy_set_cards[action.payload.query] = action.payload.cards;
+      console.log({
+        ...state,
+        set_cards: copy_set_cards
+      })
+      return {
+        ...state,
+        set_cards: copy_set_cards
+      };
     default:
       return state;
   }
 };
+
+//
+// this.setState(oldState => {
+//   return {
+//     foo: {
+//       ...oldState.foo,
+//       [keyToChange]: value
+//     }
+//   }
+// });

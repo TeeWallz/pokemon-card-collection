@@ -1,6 +1,6 @@
 import axios from "axios";
 import { toastOnError } from "../../utils/Utils";
-import { GET_CARDS } from "./SetsTypes";
+import { GET_SETS } from "./SetsTypes";
 
 export const getSets = () => dispatch => {
     console.log("getSets!")
@@ -8,7 +8,7 @@ export const getSets = () => dispatch => {
     .get("/api/v1/sets/")
     .then(response => {
       dispatch({
-        type: GET_CARDS,
+        type: GET_SETS,
         payload: response.data.results
       });
     })
@@ -23,7 +23,7 @@ export const createCollectionFromSet = () => dispatch => {
     .get("/api/v1/sets/")
     .then(response => {
       dispatch({
-        type: GET_CARDS,
+        type: GET_SETS,
         payload: response.data.results
       });
     })

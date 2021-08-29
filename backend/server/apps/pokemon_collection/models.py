@@ -16,6 +16,7 @@ User = get_user_model()
 class Card(models.Model):
     id = models.CharField(primary_key=True, max_length=20)
     set = models.ForeignKey('Sets', models.DO_NOTHING, blank=True, null=True)
+    set_order_number = models.IntegerField(blank=True, null=True)
     number = models.CharField(max_length=10, blank=True, null=True)
     name = models.CharField(max_length=70, blank=True, null=True)
     supertype = models.CharField(max_length=20, blank=True, null=True)
@@ -33,7 +34,7 @@ class Card(models.Model):
     image_large = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'card'
 
 
@@ -43,7 +44,7 @@ class CardEvolvesto(models.Model):
                                                     db_column='evolvesTo_nationalDexNumber')  # Field name made lowercase.
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'card_evolvesTo'
         unique_together = (('card', 'evolvesto_nationaldexnumber'),)
 
@@ -54,7 +55,7 @@ class CardNationalpokedexnumbers(models.Model):
                                                   db_column='pokemon_nationalDexNumber')  # Field name made lowercase.
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'card_nationalPokedexNumbers'
         unique_together = (('card', 'pokemon_nationaldexnumber'),)
 
@@ -64,7 +65,7 @@ class CardSubtypes(models.Model):
     subtype = models.ForeignKey('Subtypes', models.DO_NOTHING)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'card_subtypes'
         unique_together = (('card', 'subtype'),)
 
@@ -74,7 +75,7 @@ class CardTypes(models.Model):
     types = models.ForeignKey('Types', models.DO_NOTHING)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'card_types'
         unique_together = (('card', 'types'),)
 
@@ -85,7 +86,7 @@ class Pokemon(models.Model):
     name = models.CharField(max_length=45, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'pokemon'
 
 
@@ -105,7 +106,7 @@ class Sets(models.Model):
     legality_expanded = models.CharField(max_length=45, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'sets'
 
 
@@ -114,7 +115,7 @@ class Subtypes(models.Model):
     name = models.CharField(unique=True, max_length=20)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'subtypes'
 
 
@@ -122,7 +123,7 @@ class Types(models.Model):
     name = models.CharField(unique=True, max_length=20)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'types'
 
 
@@ -141,7 +142,13 @@ class Collection(models.Model):
     dollar_amount_limit = models.IntegerField()
     is_set_collection = models.BooleanField()
 
+    class Meta:
+        managed = True
+
 class CollectionCard(models.Model):
     collection = models.ForeignKey(Collection, on_delete=models.DO_NOTHING)
     card = models.ForeignKey(Card, on_delete=models.DO_NOTHING)
     collection_number = models.IntegerField()
+
+    class Meta:
+        managed = True

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { toastOnError } from "../../utils/Utils";
-import { GET_CARDS, ADD_CARD, DELETE_CARD, UPDATE_CARD } from "./CardsTypes";
+import {GET_CARDS, ADD_CARD, DELETE_CARD, UPDATE_CARD, GET_FILTER_CARDS} from "./CardsTypes";
 
 export const getCards = () => dispatch => {
     console.log("getCards!")
@@ -10,6 +10,21 @@ export const getCards = () => dispatch => {
       dispatch({
         type: GET_CARDS,
         payload: response.data.results
+      });
+    })
+    .catch(error => {
+      toastOnError(error);
+    });
+};
+
+export const getCardsFilter = query => dispatch => {
+    console.log("getCardsFilter!")
+  axios
+    .get("/api/v1/cards/" + query)
+    .then(response => {
+      dispatch({
+        type: GET_FILTER_CARDS,
+        payload: {'query': query , 'cards': response.data.results}
       });
     })
     .catch(error => {

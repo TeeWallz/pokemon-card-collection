@@ -140,8 +140,9 @@ DATABASES = {
         'HOST': '127.0.0.1',   # Or an IP Address that your DB is hosted on
         # 'HOST': '172.26.9.76',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
-    }
+    },
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators

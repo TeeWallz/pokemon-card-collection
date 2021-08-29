@@ -26,19 +26,9 @@ class Card extends Component {
     const { card } = this.props;
     return (
       <div>
-        <hr />
         <p>
-          (id:{card.id}) {card.content}
+          {card.id} - {card.name}
         </p>
-        <Button variant="secondary" size="sm" onClick={this.onUpperCaseClick}>
-          Upper case
-        </Button>{" "}
-        <Button variant="info" size="sm" onClick={this.onLowerCaseClick}>
-          Lower case
-        </Button>{" "}
-        <Button variant="danger" size="sm" onClick={this.onDeleteClick}>
-          Delete
-        </Button>
       </div>
     );
   }
