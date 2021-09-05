@@ -2,7 +2,7 @@ import React, {Component, useState} from "react";
 import PropTypes from "prop-types";
 import {connect} from "react-redux";
 import {withRouter} from "react-router-dom";
-import {Button, Form, FormControl} from "react-bootstrap";
+import {Button, Form, FormControl, InputGroup} from "react-bootstrap";
 import {addCollection} from "./CollectionsActions";
 import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
 import ToggleButton from "react-bootstrap/ToggleButton";
@@ -22,6 +22,7 @@ import {getCardsFilter} from "../cards/CardsActions";
 import CardsList from "../cards/CardsList";
 import {getPokemon} from "../database_objects/pokemon/PokemonsActions";
 
+import ReactMultiSelectCheckboxes from 'react-multiselect-checkboxes';
 
 pokemon.configure({apiKey: '4440c304-d5c0-4939-b533-5befa084795c'})
 
@@ -33,7 +34,18 @@ const pokemon_list_style = {
     WebkitOverflowScrolling: "touch",
 }
 
+function pad(str, max) {
+    str = str.toString();
+    return str.length < max ? pad("0" + str, max) : str;
+}
 
+function getDropdownButtonLabel({placeholderButtonLabel, value}) {
+    if (value && value.some((o) => o.value === "*")) {
+        return `${placeholderButtonLabel}: All`;
+    } else {
+        return `${placeholderButtonLabel}: ${value.length} selected`;
+    }
+}
 
 
 class AddCollection extends Component {
@@ -47,9 +59,12 @@ class AddCollection extends Component {
             SetSelection: '',
             sets: [],
             currentQuery: '',
+            selectedPokemon: [],
         };
         this.props.getSets();
         this.props.getPokemon();
+
+        this.pokemonListChange = this.pokemonListChange.bind(this)
     }
 
     onChange = e => {
@@ -80,6 +95,31 @@ class AddCollection extends Component {
             console.log(this.state)
             // this.forceUpdate();
         });
+    }
+
+    pokemonListChange(value, event) {
+        if (event.action === "select-option" && event.option.value === "*" && this.state.selectedPokemon.length < this.props.pokemon.length) {
+            let options = this.props.pokemon.map(pokemon => {
+                return (
+                    {
+                        label: "#" + pad(pokemon.nationaldexnumber, 3) + " " + pokemon.name,
+                        value: pokemon.nationaldexnumber
+                    }
+                )
+            });
+            this.setState({"selectedPokemon": options});
+        } else if (event.action === "select-option" && event.option.value === "*" && this.state.selectedPokemon.length === this.props.pokemon.length) {
+            this.setState({"selectedPokemon": []});
+        } else if (event.action === "deselect-option" &&
+            event.option.value === "*") {
+            this.setState({"selectedPokemon": []});
+        } else if (event.action === "deselect-option") {
+            this.setState({"selectedPokemon": value.filter(o => o.value !== "*")});
+        } else if (value.length === this.props.pokemon.length - 1) {
+            this.setState({"selectedPokemon": this.props.pokemon});
+        } else {
+            this.setState({"selectedPokemon": value});
+        }
     }
 
 
@@ -118,48 +158,49 @@ class AddCollection extends Component {
                 )
                 break;
             case 'pokemon':
+                let keke = 1;
+                let pokemonNotChosen = "";
+                //https://codepen.io/souporserious/pen/vGRZQL
+                //!!!!!!!!!!
+                let options = []
+
+                if (this.props.pokemon.length > 0) {
+                    options = this.props.pokemon.map(pokemon => {
+                        return (
+                            {
+                                label: "#" + pad(pokemon.nationaldexnumber, 3) + " " + pokemon.name,
+                                value: pokemon.nationaldexnumber
+                            }
+                        )
+                    });
+                }
+
+                pokemonNotChosen = (
+                    // <ReactMultiSelectCheckboxes options={options}/>
+                    <ReactMultiSelectCheckboxes
+                        options={[{label: "All", value: "*"}, ...options]}
+                        placeholderButtonLabel="Pokemon"
+                        getDropdownButtonLabel={getDropdownButtonLabel}
+                        value={this.state.selectedPokemon}
+                        onChange={this.pokemonListChange}
+                    />
+                )
+
+
                 formContents = (
                     <Form.Group className="mb-3" controlId="formFromSet">
                         {/*<Form.Label>Collection From P</Form.Label>*/}
 
                         <Form.Row>
                             <Form.Group as={Col} sm={5}>
-                                <ListGroup defaultActiveKey="#link1" style={pokemon_list_style}>
-                                    <ListGroup.Item action href="#link1">
-                                        Link 1
-                                    </ListGroup.Item>
-                                    <ListGroup.Item action >
-                                        This one is a button
-                                    </ListGroup.Item>
-                                    <ListGroup.Item action >
-                                        This one is a button
-                                    </ListGroup.Item>
-                                    <ListGroup.Item action >
-                                        This one is a button
-                                    </ListGroup.Item>
-                                    <ListGroup.Item action >
-                                        This one is a button
-                                    </ListGroup.Item>
-                                    <ListGroup.Item action >
-                                        This one is a button
-                                    </ListGroup.Item>
-
-                                </ListGroup>
-                            </Form.Group>
-                            <Form.Group as={Col} sm={2}>
-                                Button
+                                {/*<ListGroup defaultActiveKey="#link1" style={pokemon_list_style}>*/}
+                                {pokemonNotChosen}
+                                {/*</ListGroup>*/}
                             </Form.Group>
                             <Form.Group as={Col} sm={5}>
-                                <ListGroup defaultActiveKey="#link1" style={pokemon_list_style}>
-                                    <ListGroup.Item action href="#link1">
-                                        Link 1
-                                    </ListGroup.Item>
-                                    <ListGroup.Item action href="#link2" disabled>
-                                        Link 2
-                                    </ListGroup.Item>
-                                    <ListGroup.Item action >
-                                        This one is a button
-                                    </ListGroup.Item>
+                                <ListGroup defaultActiveKey="#link1" styzle={pokemon_list_style}>
+
+
                                 </ListGroup>
                             </Form.Group>
                         </Form.Row>
@@ -291,7 +332,7 @@ class AddCollection extends Component {
                     </Form.Group>
                 </Form>
 
-                <CardsList cards={cards_to_render}/>
+                {/*<CardsList cards={cards_to_render}/>*/}
 
                 <Button variant="success" onClick={this.onAddClick}>
                     Add collection
@@ -315,7 +356,7 @@ const mapStateToProps = (state) => {
         // error: state.THE_SPECIFIC_REDUCER.error
         sets: state.sets.sets,
         cards: state.cards,
-        pokemon: state.pokemon,
+        pokemon: state.pokemon.pokemon,
     };
 }
 

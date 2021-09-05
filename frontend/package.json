@@ -14,6 +14,7 @@
     "react-bootstrap": "^1.4.0",
     "react-bootstrap-table-next": "^4.0.3",
     "react-dom": "^17.0.1",
+    "react-multiselect-checkboxes": "^0.1.1",
     "react-redux": "^7.2.2",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.0",
@@ -21,6 +22,7 @@
     "react-toastify": "^6.0.9",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
+    "selectly": "^0.5.0",
     "web-vitals": "^0.2.4"
   },
   "scripts": {

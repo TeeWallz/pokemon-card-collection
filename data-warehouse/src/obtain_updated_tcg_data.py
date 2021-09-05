@@ -55,6 +55,14 @@ def load_pokedex():
     # Process data
     print("Processing Pokedex")
 
+    loadPokedexSql = """INSERT IGNORE INTO pokemon_card_collection.pokemon(nationalDexNumber, name)
+    VALUES( %s , %s );"""
+
+    for pokemon in raw_pokemon:
+        cursor.execute(loadPokedexSql, [pokemon['id'], pokemon['name']['english']])
+
+    db.commit()
+    print("Done")
 
 def get_tcg_data():
     lel = os.path.join(tcg_json_destination_path, "pokemon-tcg-data-master/README.md")
@@ -167,9 +175,10 @@ def load_cards():
 
 
 def main():
-    get_tcg_data()
-    load_sets()
-    load_cards()
+    load_pokedex();
+    # get_tcg_data()
+    # load_sets()
+    # load_cards()
 
 if __name__ == "__main__":
     main()

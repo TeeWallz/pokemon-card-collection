@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ..pokemon_collection.models import Card, Sets
+from ..pokemon_collection.models import Card, Sets, Pokemon
 
 
 class CardSerializer(serializers.ModelSerializer):
@@ -44,3 +44,14 @@ class SetSerializer(serializers.ModelSerializer):
             "legality_standard",
             "legality_expanded",
         )
+
+class PokemonSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Pokemon
+        fields = '__all__'
+        read_only_fields = (
+            "nationalDexNumber",
+            "name",
+        )
+

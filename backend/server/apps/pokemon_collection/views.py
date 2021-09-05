@@ -2,8 +2,10 @@ import django_filters.rest_framework
 from rest_framework import viewsets, generics
 from django_filters.rest_framework import DjangoFilterBackend
 
+from .pagination import LargeResultsSetPagination
 from ..pokemon_collection.models import Card, Sets, Pokemon
-from ..pokemon_collection.serializers import CardSerializer, SetSerializer
+from ..pokemon_collection.serializers import CardSerializer, SetSerializer, PokemonSerializer
+
 
 class CardViewSet(viewsets.ModelViewSet):
 
@@ -30,7 +32,8 @@ class SetViewSet(viewsets.ModelViewSet):
 
 class PokemonViewSet(viewsets.ModelViewSet):
 
-    serializer_class = SetSerializer
+    serializer_class = PokemonSerializer
+    pagination_class = LargeResultsSetPagination
     queryset = Pokemon.objects.all().order_by('nationaldexnumber')
     def perform_create(self, serializer):
         serializer.save()
