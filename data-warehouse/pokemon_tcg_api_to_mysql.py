@@ -1,17 +1,14 @@
 import json
 import os
-from io import BytesIO
-from pathlib import Path
 import urllib.request
-from zipfile import ZipFile
 import zipfile
-import tempfile 
+from pathlib import Path
 
 # data_source_location = os.path.join(tempfile.gettempdir(), "tcg_api")
 data_source_location = os.path.join(os.path.dirname(os.path.realpath(__file__)), "tcg_api")
 force_download = False
 
-data_sources = {
+    data_sources = {
     "pokedex": {
         "url": "https://raw.githubusercontent.com/fanzeyi/pokemon.json/master/pokedex.json",
     },
@@ -56,51 +53,57 @@ def download_data():
 
                     # sets
                     data_sources[data_source_name]['data']['sets'] = {}
+                    sets_dict = data_sources[data_source_name]['data']['sets']
+
                     set_path = os.path.join(destination_directory_data, "pokemon-tcg-data-master/sets")
                     for filename in os.listdir(set_path):
                         langauge_code = filename.replace(".json", "")
                         set_language_file = os.path.join(set_path, filename)
-                        data_sources[data_source_name]['data']['sets'][langauge_code] = {}
+                        sets_dict[langauge_code] = {}
 
                         with open(set_language_file) as set_language_downloaded_data:
                             data_dict = json.load(set_language_downloaded_data)
                             for set in data_dict:
-                                data_sources[data_source_name]['data']['sets'][langauge_code][set['id']] = set
+                                sets_dict[langauge_code][set['id']] = set
 
-                    #cards
-                    cards_path = os.path.join(destination_directory_data, "pokemon-tcg-data-master/cards")
+                    for object_type in ('cards', 'decks'):
+                        object_dir = os.path.join(destination_directory_data, "pokemon-tcg-data-master", object_type)
+                        data_sources[data_source_name]['data'][object_type] = {}
+                        object_dict = data_sources[data_source_name]['data'][object_type]
 
-                    # For each language
-                    for cards_language in os.listdir(cards_path):
-                        cards_language_dir = os.path.join(cards_path, cards_language)
+                        # For each language
+                        for language in os.listdir(object_dir):
+                            language_dir = os.path.join(object_dir, language)
+                            object_dict[language] = {}
 
-                        # For each set in language
-                        for set_in_language in os.listdir(cards_language_dir):
-                            set_in_language_dir = os.path.join(cards_language_dir, set_in_language)
-                            set_code = set_in_language.replace(".json", "")
+                            # For each file in language
+                            for object_filename in os.listdir(language_dir):
+                                object_filename_full = os.path.join(language_dir, object_filename)
+                                set_code = object_filename.replace('.json', '')
+                                object_dict[language][set_code] = {}
 
-                            with open(set_in_language_dir) as set_data:
-                                set_data = json.load(set_data)
-                                data_sources[data_source_name]['data']['sets'][langauge_code][set['id']]['cards'] = {}
+                                with open(object_filename_full) as object_f:
+                                    object_data = json.load(object_f)
+                                    sets_dict[language][set_code][object_type] = {}
 
-                                for card in set_data:
-                                    data_sources[data_source_name]['data']['sets'][langauge_code][set['id']]['cards'][card['id']] = card
-                                ke = 1
+                                    for single_object in object_data:
+                                        if 'id' in single_object:
+                                            object_dict[language][set_code][single_object['id']] = single_object
+                                            sets_dict[language][set_code][object_type][single_object['id']] = object_dict[language][set_code][single_object['id']]
+                                        else:
+                                            print("Skipping {}/{}/{} due to having no unique ID from the tcg api.".format(object_type, set_code, single_object['name']))
+    return data_sources
 
-                    #decks
-                    decks_path = os.path.join(destination_directory_data, "pokemon-tcg-data-master/decks")
+def generate_sql(data_sources):
 
 
-                    for filename in os.listdir(destination_directory_data):
-                        full_path = os.path.join(destination_directory_data, filename)
-                        with open(full_path) as f:
-                            data_sources[data_source_name]['data']['filename'] = json.load(f)
-
+    pass
 
 
 def main():
-    download_data()
+    data_sources = download_data()
+    generate_sql(data_sources)
     kek = 1
 
 if __name__ == "__main__":
-    download_data()
+    main()
