@@ -6,6 +6,7 @@ import {Button, Form, FormControl, InputGroup} from "react-bootstrap";
 import {addCollection} from "./CollectionsActions";
 import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
 import ToggleButton from "react-bootstrap/ToggleButton";
+import Multiselect from 'multiselect-react-dropdown';
 import Dropdown from "react-bootstrap/Dropdown";
 import Select from 'react-select'
 import pokemon from 'pokemontcgsdk'
@@ -59,12 +60,14 @@ class AddCollection extends Component {
             SetSelection: '',
             sets: [],
             currentQuery: '',
+            pokemonOptions: [],
             selectedPokemon: [],
+            options: [{name: 'Srigar', id: 1}, {name: 'Sam', id: 2}]
         };
         this.props.getSets();
         this.props.getPokemon();
 
-        this.pokemonListChange = this.pokemonListChange.bind(this)
+        this.onPokemonListChange = this.onPokemonListChange.bind(this)
     }
 
     onChange = e => {
@@ -97,29 +100,11 @@ class AddCollection extends Component {
         });
     }
 
-    pokemonListChange(value, event) {
-        if (event.action === "select-option" && event.option.value === "*" && this.state.selectedPokemon.length < this.props.pokemon.length) {
-            let options = this.props.pokemon.map(pokemon => {
-                return (
-                    {
-                        label: "#" + pad(pokemon.nationaldexnumber, 3) + " " + pokemon.name,
-                        value: pokemon.nationaldexnumber
-                    }
-                )
-            });
-            this.setState({"selectedPokemon": options});
-        } else if (event.action === "select-option" && event.option.value === "*" && this.state.selectedPokemon.length === this.props.pokemon.length) {
-            this.setState({"selectedPokemon": []});
-        } else if (event.action === "deselect-option" &&
-            event.option.value === "*") {
-            this.setState({"selectedPokemon": []});
-        } else if (event.action === "deselect-option") {
-            this.setState({"selectedPokemon": value.filter(o => o.value !== "*")});
-        } else if (value.length === this.props.pokemon.length - 1) {
-            this.setState({"selectedPokemon": this.props.pokemon});
-        } else {
-            this.setState({"selectedPokemon": value});
-        }
+    onPokemonListChange(selectedList, selectedItem) {
+        console.log(this.state);
+        console.log(selectedList);
+        console.log(selectedItem);
+
     }
 
 
@@ -160,29 +145,24 @@ class AddCollection extends Component {
             case 'pokemon':
                 let keke = 1;
                 let pokemonNotChosen = "";
-                //https://codepen.io/souporserious/pen/vGRZQL
-                //!!!!!!!!!!
-                let options = []
-
-                if (this.props.pokemon.length > 0) {
-                    options = this.props.pokemon.map(pokemon => {
-                        return (
-                            {
-                                label: "#" + pad(pokemon.nationaldexnumber, 3) + " " + pokemon.name,
-                                value: pokemon.nationaldexnumber
-                            }
-                        )
-                    });
-                }
-
+                console.log("Options:");
+                // console.log(this.props.pokemonOptions);
+                // console.log(this.state);
                 pokemonNotChosen = (
                     // <ReactMultiSelectCheckboxes options={options}/>
-                    <ReactMultiSelectCheckboxes
-                        options={[{label: "All", value: "*"}, ...options]}
-                        placeholderButtonLabel="Pokemon"
-                        getDropdownButtonLabel={getDropdownButtonLabel}
-                        value={this.state.selectedPokemon}
-                        onChange={this.pokemonListChange}
+                    // <ReactMultiSelectCheckboxes
+                    //     options={[{label: "All", value: "*"}, ...options]}
+                    //     placeholderButtonLabel="Pokemon"
+                    //     getDropdownButtonLabel={getDropdownButtonLabel}
+                    //     value={this.state.selectedPokemon}
+                    //     onChange={this.pokemonListChange}
+                    // />
+                    <Multiselect
+                        options={this.props.pokemonOptions}
+                        displayValue="label"
+                        selectedValues={this.state.selectedPokemon}
+                        onSelect={this.onPokemonListChange} // Function will trigger on select event
+                        // onRemove={this.onRemove} // Function will trigger on remove event
                     />
                 )
 
@@ -349,6 +329,14 @@ class AddCollection extends Component {
 
 const mapStateToProps = (state) => {
     console.log(state);
+    let pokemonOptionsVal = state.pokemon.pokemon.map(pokemon => {
+        return (
+            {
+                label: "#" + pad(pokemon.nationaldexnumber, 3) + " " + pokemon.name,
+                value: pokemon.nationaldexnumber
+            }
+        )
+    })
 
     return {
         // userInfo: state.THE_SPECIFIC_REDUCER.userInfo,
@@ -357,9 +345,9 @@ const mapStateToProps = (state) => {
         sets: state.sets.sets,
         cards: state.cards,
         pokemon: state.pokemon.pokemon,
-    };
+        pokemonOptions: pokemonOptionsVal
+    }
 }
-
 // export default connect(mapStateToProps, {addCollection})(withRouter(AddCollection));
 
 export default connect(mapStateToProps, {

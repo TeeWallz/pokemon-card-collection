@@ -54,7 +54,6 @@ def download_data():
                     # sets
                     data_sources[data_source_name]['data']['sets'] = {}
                     sets_dict = data_sources[data_source_name]['data']['sets']
-
                     set_path = os.path.join(destination_directory_data, "pokemon-tcg-data-master/sets")
                     for filename in os.listdir(set_path):
                         langauge_code = filename.replace(".json", "")
@@ -66,6 +65,7 @@ def download_data():
                             for set in data_dict:
                                 sets_dict[langauge_code][set['id']] = set
 
+                    # load cards and data into their own section, then reference it in sets
                     for object_type in ('cards', 'decks'):
                         object_dir = os.path.join(destination_directory_data, "pokemon-tcg-data-master", object_type)
                         data_sources[data_source_name]['data'][object_type] = {}
