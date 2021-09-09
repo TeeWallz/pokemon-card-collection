@@ -1,10 +1,11 @@
 import django_filters.rest_framework
+from django.views.generic import ListView
 from rest_framework import viewsets, generics
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .pagination import LargeResultsSetPagination
 from ..pokemon_collection.models import Card, Sets, Pokemon
-from ..pokemon_collection.serializers import CardSerializer, SetSerializer, PokemonSerializer
+from ..pokemon_collection.serializers import CardSerializer, SetSerializer, PokemonSerializer, CardArtistSerializer
 
 
 class CardViewSet(viewsets.ModelViewSet):
@@ -14,9 +15,6 @@ class CardViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['set', 'id']
 
-    def perform_create(self, serializer):
-        serializer.save()
-
     def get_queryset(self):
         return self.queryset.filter()
 
@@ -24,9 +22,6 @@ class SetViewSet(viewsets.ModelViewSet):
 
     serializer_class = SetSerializer
     queryset = Sets.objects.all().order_by('-releasedate')
-    def perform_create(self, serializer):
-        serializer.save()
-
     def get_queryset(self):
         return self.queryset.filter()
 
@@ -35,13 +30,19 @@ class PokemonViewSet(viewsets.ModelViewSet):
     serializer_class = PokemonSerializer
     pagination_class = LargeResultsSetPagination
     queryset = Pokemon.objects.all().order_by('nationaldexnumber')
-    def perform_create(self, serializer):
-        serializer.save()
 
     def get_queryset(self):
         return self.queryset.filter()
 
+class CardArtistViewSet(viewsets.ModelViewSet):
 
+    serializer_class = CardArtistSerializer
+    queryset = Card.objects.filter(artist__isnull=False).values('artist').distinct().order_by('artist')
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['artist']
+
+    def get_queryset(self):
+        return self.queryset.filter()
 
 
 

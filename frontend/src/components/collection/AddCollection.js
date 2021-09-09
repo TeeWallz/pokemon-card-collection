@@ -19,7 +19,7 @@ import Col from "react-bootstrap/Col";
 
 
 import {toastOnError} from "../../utils/Utils";
-import {getCardsFilter} from "../cards/CardsActions";
+import {getArtists, getCardsFilter} from "../cards/CardsActions";
 import CardsList from "../cards/CardsList";
 import {getPokemon} from "../database_objects/pokemon/PokemonsActions";
 
@@ -62,10 +62,11 @@ class AddCollection extends Component {
             currentQuery: '',
             pokemonOptions: [],
             selectedPokemon: [],
-            options: [{name: 'Srigar', id: 1}, {name: 'Sam', id: 2}]
+            selectedOptions: []
         };
         this.props.getSets();
         this.props.getPokemon();
+        this.props.getArtists();
 
         this.onPokemonListChange = this.onPokemonListChange.bind(this)
     }
@@ -79,7 +80,7 @@ class AddCollection extends Component {
 
     onChangeCollectionSource = e => {
         console.log(e)
-        this.setState({'collectionSource': e, 'currentQuery': ''}, () => {
+        this.setState({'collectionSource': e, 'currentQuery': '', selectedOptions: []}, () => {
             console.log(this.state)
         });
     };
@@ -123,8 +124,11 @@ class AddCollection extends Component {
     };
 
     CollectionSelector = () => {
-        let kek = 1;
-        console.log(this.props)
+        console.log("-----");
+        console.log(this.props);
+        console.log("-----");
+
+        let showCollectionNameBox = false;
         let formContents = (<React.Fragment></React.Fragment>);
 
         switch (this.state.collectionSource) {
@@ -143,39 +147,19 @@ class AddCollection extends Component {
                 )
                 break;
             case 'pokemon':
-                let keke = 1;
                 let pokemonNotChosen = "";
-                console.log("Options:");
-                // console.log(this.props.pokemonOptions);
-                // console.log(this.state);
-                pokemonNotChosen = (
-                    // <ReactMultiSelectCheckboxes options={options}/>
-                    // <ReactMultiSelectCheckboxes
-                    //     options={[{label: "All", value: "*"}, ...options]}
-                    //     placeholderButtonLabel="Pokemon"
-                    //     getDropdownButtonLabel={getDropdownButtonLabel}
-                    //     value={this.state.selectedPokemon}
-                    //     onChange={this.pokemonListChange}
-                    // />
-                    <Multiselect
-                        options={this.props.pokemonOptions}
-                        displayValue="label"
-                        selectedValues={this.state.selectedPokemon}
-                        onSelect={this.onPokemonListChange} // Function will trigger on select event
-                        // onRemove={this.onRemove} // Function will trigger on remove event
-                    />
-                )
-
-
+                showCollectionNameBox = true;
                 formContents = (
                     <Form.Group className="mb-3" controlId="formFromSet">
                         {/*<Form.Label>Collection From P</Form.Label>*/}
 
                         <Form.Row>
                             <Form.Group as={Col} sm={5}>
-                                {/*<ListGroup defaultActiveKey="#link1" style={pokemon_list_style}>*/}
-                                {pokemonNotChosen}
-                                {/*</ListGroup>*/}
+                                <Multiselect
+                                    options={this.props.pokemonOptions}
+                                    displayValue="label"
+                                    selectedValues={this.state.selectedOptions}
+                                />
                             </Form.Group>
                             <Form.Group as={Col} sm={5}>
                                 <ListGroup defaultActiveKey="#link1" styzle={pokemon_list_style}>
@@ -190,12 +174,17 @@ class AddCollection extends Component {
                 )
                 break;
             case 'artist':
+                showCollectionNameBox = true;
                 formContents = (<Form.Group className="mb-3" controlId="formFromSet">
-                    <Form.Label>Collection From A</Form.Label>
-                    Dropdown
+                    <Multiselect
+                        options={this.props.artists}
+                        displayValue="label"
+                        selectedValues={this.state.selectedOptions}
+                    />
                 </Form.Group>)
                 break;
             case 'custom query':
+                showCollectionNameBox = true;
                 formContents = (<Form.Group className="mb-3" controlId="formFromSet">
                     <Form.Label>Collection From Q</Form.Label>
                     Dropdown
@@ -205,9 +194,25 @@ class AddCollection extends Component {
 
 
         return (
-            <Form.Group className="mb-3" controlId="formSources">
-                {formContents}
-            </Form.Group>
+            <React.Fragment>
+                {showCollectionNameBox &&
+                <Form.Group className="mb-3" controlId="formBasicEmail" style={{"display": showCollectionNameBox}}>
+                    <Form.Label>Collection Name {this.state.collectionName}</Form.Label>
+                    <Form.Control type="text"
+                                  placeholder="Enter name"
+                                  name="collectionName"
+                                  value={this.state.collectionName}
+                                  onChange={this.onChange}/>
+                    {/*<Form.Text className="text-muted">*/}
+                    {/*    We'll never share your email with anyone else.*/}
+                    {/*</Form.Text>*/}
+                </Form.Group>
+                }
+                <Form.Group className="mb-3" controlId="formSources">
+                    {formContents}
+                </Form.Group>
+            </React.Fragment>
+
         )
     }
 
@@ -268,20 +273,10 @@ class AddCollection extends Component {
 
         return (
             <div>
-                <h2>Add new collection /{this.state.collectionName}/</h2>
+
                 <Form>
                     <Form.Group controlId="contentId">
-                        <Form.Group className="mb-3" controlId="formBasicEmail">
-                            <Form.Label>Collection Name {this.state.collectionName}</Form.Label>
-                            <Form.Control type="text"
-                                          placeholder="Enter name"
-                                          name="collectionName"
-                                          value={this.state.collectionName}
-                                          onChange={this.onChange}/>
-                            {/*<Form.Text className="text-muted">*/}
-                            {/*    We'll never share your email with anyone else.*/}
-                            {/*</Form.Text>*/}
-                        </Form.Group>
+
 
                         <Form.Group className="mb-3" controlId="formSourceLocation">
                             <Form.Label>Collection Source</Form.Label>
@@ -338,6 +333,15 @@ const mapStateToProps = (state) => {
         )
     })
 
+    let artists = state.cards.artists.map(artist => {
+        return (
+            {
+                label: artist,
+                value: artist
+            }
+        )
+    })
+
     return {
         // userInfo: state.THE_SPECIFIC_REDUCER.userInfo,
         // loading: state.THE_SPECIFIC_REDUCER.loading,
@@ -345,11 +349,12 @@ const mapStateToProps = (state) => {
         sets: state.sets.sets,
         cards: state.cards,
         pokemon: state.pokemon.pokemon,
+        artists: artists,
         pokemonOptions: pokemonOptionsVal
     }
 }
 // export default connect(mapStateToProps, {addCollection})(withRouter(AddCollection));
 
 export default connect(mapStateToProps, {
-    getSets, getCardsFilter, getPokemon
+    getArtists, getSets, getCardsFilter, getPokemon
 })(withRouter(AddCollection));

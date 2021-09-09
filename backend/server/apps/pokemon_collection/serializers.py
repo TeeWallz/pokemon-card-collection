@@ -55,3 +55,9 @@ class PokemonSerializer(serializers.ModelSerializer):
             "name",
         )
 
+class CardArtistSerializer(serializers.Serializer):
+    # artist = serializers.CharField()
+
+    # Evaluate as array
+    def to_representation(self, obj):
+        return obj['artist']

@@ -1,8 +1,9 @@
-import {GET_CARDS, ADD_CARD, UPDATE_CARD, DELETE_CARD, GET_FILTER_CARDS} from "./CardsTypes";
+import {GET_CARDS, ADD_CARD, UPDATE_CARD, DELETE_CARD, GET_FILTER_CARDS, GET_ARTISTS} from "./CardsTypes";
 
 const initialState = {
   cards: [],
   set_cards: {},
+  artists: []
 };
 
 export const cardsReducer = (state = initialState, action) => {
@@ -45,6 +46,13 @@ export const cardsReducer = (state = initialState, action) => {
         ...state,
         set_cards: copy_set_cards
       };
+    case GET_ARTISTS:
+
+        return {
+        ...state,
+        artists: action.payload
+      };
+
     default:
       return state;
   }
