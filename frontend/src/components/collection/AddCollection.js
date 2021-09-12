@@ -9,13 +9,21 @@ import ToggleButton from "react-bootstrap/ToggleButton";
 import Multiselect from 'multiselect-react-dropdown';
 import Dropdown from "react-bootstrap/Dropdown";
 import Select from 'react-select'
-import pokemon from 'pokemontcgsdk'
+// import pokemon from 'pokemontcgsdk'
 import Collection from "./Collection";
 import {getSets} from "../sets/SetsActions"
 // import {getCardsFilter} from "../cards/CardsActions";
 import ListGroup from "react-bootstrap/ListGroup";
 import axios from "axios";
 import Col from "react-bootstrap/Col";
+import pokemon, {generateTcgApiQuery} from "../tcgapi_utils/tcgapi_utils"
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import Paper from '@material-ui/core/Paper';
 
 
 import {toastOnError} from "../../utils/Utils";
@@ -25,7 +33,7 @@ import {getPokemon} from "../database_objects/pokemon/PokemonsActions";
 
 import ReactMultiSelectCheckboxes from 'react-multiselect-checkboxes';
 
-pokemon.configure({apiKey: '4440c304-d5c0-4939-b533-5befa084795c'})
+// pokemon.configure({apiKey: '4440c304-d5c0-4939-b533-5befa084795c'})
 
 const pokemon_list_style = {
     maxHeight: '300px',
@@ -33,6 +41,7 @@ const pokemon_list_style = {
     overflow: 'scroll',
     overflowScrolling: "touch",
     WebkitOverflowScrolling: "touch",
+    minHeight: "200px",
 }
 
 function pad(str, max) {
@@ -46,6 +55,62 @@ function getDropdownButtonLabel({placeholderButtonLabel, value}) {
     } else {
         return `${placeholderButtonLabel}: ${value.length} selected`;
     }
+}
+
+function CardListItem(cardData) {
+    let image = cardData.cardData["images"]["small"];
+    let text = cardData.cardData['id'] + " / " + cardData.cardData['name'];
+
+    return (
+        <ListGroup.Item><img style={{width: "20px"}}
+                             src={image}/>
+            {text}
+        </ListGroup.Item>
+    )
+}
+
+function isNumeric(str) {
+    if (typeof str != "string") return false // we only process strings!
+    return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+        !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
+}
+
+function processCardsForList(cards, includeReverseHolos) {
+
+    let resultCards = [];
+
+    for (let i = 0; i < cards.length; i++) {
+        cards[i]['collectionId'] = i;
+        cards[i]['printedCardNumber'] = (isNumeric(cards[i].number)) ? cards[i].number + "/" + cards[i].set.total : cards[i].number;
+        if (!(includeReverseHolos)) {
+            resultCards.push(cards[i])
+            continue
+        }
+
+        let rarities = Object.keys(cards[i].tcgplayer.prices);
+        let excludeRarities = ['1stEditionNormal']
+
+        for (let j = 0; j < rarities.length; j++) {
+            // Clone dict for each rarity
+            if(rarities[j] in excludeRarities){
+                continue;
+            }
+
+            let additions = {
+                reverse: rarities[j]
+            }
+            let copy = {...cards[i], ...additions};
+            resultCards.push(copy)
+        }
+
+    }
+
+    return resultCards;
+    // let processedCards = cards.map((card, index) => Object.assign({}, card, {
+    //     collectionId: index,
+    //     printedCardNumber: (isNumeric(card.number)) ? card.number + "/" + card.set.total : card.number,
+    //     rarities: Object.keys({card.tcgplayer.prices, ...'1stEditionHolofoil').join(","),
+    // }))
 }
 
 
@@ -62,13 +127,18 @@ class AddCollection extends Component {
             currentQuery: '',
             pokemonOptions: [],
             selectedPokemon: [],
-            selectedOptions: []
+            selectedOptions: [],
+            selectedCards: []
         };
         this.props.getSets();
         this.props.getPokemon();
         this.props.getArtists();
 
-        this.onPokemonListChange = this.onPokemonListChange.bind(this)
+        this.onPokemonListChange = this.onPokemonListChange.bind(this);
+
+        this.multiSelectSet = React.createRef();
+        this.multiSelectPokemon = React.createRef();
+        this.multiSelectArtist = React.createRef();
     }
 
     onChange = e => {
@@ -83,38 +153,69 @@ class AddCollection extends Component {
         this.setState({'collectionSource': e, 'currentQuery': '', selectedOptions: []}, () => {
             console.log(this.state)
         });
+        if (this.multiSelectSet.current !== null) {
+            this.multiSelectSet.current.resetSelectedValues();
+        }
+        if (this.multiSelectPokemon.current !== null) {
+            this.multiSelectPokemon.current.resetSelectedValues();
+        }
+        if (this.multiSelectArtist.current !== null) {
+            this.multiSelectArtist.current.resetSelectedValues();
+        }
+
     };
+
+    collectionSourceOnChange = (selectedList, selectedItem) => {
+        let selectedValues = selectedList.map(listItem => {
+            return listItem['value'];
+        });
+
+
+        switch (this.state.collectionSource) {
+            case 'pokemon':
+                let query = generateTcgApiQuery('nationalPokedexNumbers', selectedValues);
+                pokemon.card.all({q: query, orderBy: 'set.releaseDate,number'})
+                    .then((cards) => {
+                        let processedCards = processCardsForList(cards, true);
+                        this.setState({selectedCards: processedCards}, () => {
+                        });
+                    })
+
+
+                break;
+            case 'kek':
+                // code block
+                break;
+            default:
+            // code block
+        }
+
+
+        this.setState({selectedOptions: selectedList}, () => {
+            console.log(this.state.selectedOptions)
+        });
+    }
+
 
     onChangeSetSelection = e => {
         console.log(e);
         let query = '?set=' + e.value + '&orderBy=number';
 
         this.props.getCardsFilter(query, () => {
-            console.log("FUCK");
 
         })
 
         let setName = this.props.sets.filter(obj => obj.id === e.value)[0].name;
         this.setState({'collectionName': setName, 'SetSelection': e.value, 'currentQuery': query}, () => {
             console.log(this.state)
-            // this.forceUpdate();
         });
     }
 
     onPokemonListChange(selectedList, selectedItem) {
-        console.log(this.state);
-        console.log(selectedList);
-        console.log(selectedItem);
-
     }
 
 
     onAddClick = () => {
-        if (this.state.collectionSource == 'set') {
-            let cards = 1;
-        }
-
-
         const collection = {
             collectionName: this.state.collectionName,
             collectionSource: this.state.collectionSource,
@@ -124,10 +225,6 @@ class AddCollection extends Component {
     };
 
     CollectionSelector = () => {
-        console.log("-----");
-        console.log(this.props);
-        console.log("-----");
-
         let showCollectionNameBox = false;
         let formContents = (<React.Fragment></React.Fragment>);
 
@@ -150,38 +247,28 @@ class AddCollection extends Component {
                 let pokemonNotChosen = "";
                 showCollectionNameBox = true;
                 formContents = (
-                    <Form.Group className="mb-3" controlId="formFromSet">
-                        {/*<Form.Label>Collection From P</Form.Label>*/}
-
-                        <Form.Row>
-                            <Form.Group as={Col} sm={5}>
-                                <Multiselect
-                                    options={this.props.pokemonOptions}
-                                    displayValue="label"
-                                    selectedValues={this.state.selectedOptions}
-                                />
-                            </Form.Group>
-                            <Form.Group as={Col} sm={5}>
-                                <ListGroup defaultActiveKey="#link1" styzle={pokemon_list_style}>
-
-
-                                </ListGroup>
-                            </Form.Group>
-                        </Form.Row>
-
-
-                    </Form.Group>
+                    <Multiselect
+                        options={this.props.pokemonOptions}
+                        displayValue="label"
+                        selectedValues={this.state.selectedOptions}
+                        ref={this.multiSelectPokemon}
+                        onSelect={this.collectionSourceOnChange}
+                        onRemove={this.collectionSourceOnChange}
+                    />
                 )
                 break;
             case 'artist':
                 showCollectionNameBox = true;
-                formContents = (<Form.Group className="mb-3" controlId="formFromSet">
+                formContents = (
                     <Multiselect
                         options={this.props.artists}
                         displayValue="label"
                         selectedValues={this.state.selectedOptions}
+                        ref={this.multiSelectArtist}
+                        onSelect={this.collectionSourceOnChange}
+                        onRemove={this.collectionSourceOnChange}
                     />
-                </Form.Group>)
+                )
                 break;
             case 'custom query':
                 showCollectionNameBox = true;
@@ -203,13 +290,60 @@ class AddCollection extends Component {
                                   name="collectionName"
                                   value={this.state.collectionName}
                                   onChange={this.onChange}/>
-                    {/*<Form.Text className="text-muted">*/}
-                    {/*    We'll never share your email with anyone else.*/}
-                    {/*</Form.Text>*/}
                 </Form.Group>
                 }
                 <Form.Group className="mb-3" controlId="formSources">
-                    {formContents}
+
+                    <Form.Group className="mb-3" controlId="formFromSet">
+                        <Form.Row>
+                            <Form.Group as={Col} sm={5}>
+                                {formContents}
+                            </Form.Group>
+                            <Form.Group as={Col} sm={7}>
+                                <ListGroup defaultActiveKey="#link1" style={pokemon_list_style}>
+                                    <TableContainer component={Paper}>
+                                        <Table style={{minWidth: "100%",}} size="small" aria-label="a dense table">
+                                            <TableHead>
+                                                <TableRow>
+                                                    <TableCell>#</TableCell>
+                                                    <TableCell align="right">Num</TableCell>
+                                                    <TableCell align="right">Name</TableCell>
+                                                    <TableCell align="right">Set</TableCell>
+                                                    <TableCell align="right">Rarity</TableCell>
+                                                    <TableCell align="right">Reverse</TableCell>
+                                                    <TableCell align="right">Date</TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {this.state.selectedCards.map((row) => (
+                                                    <TableRow key={row.id}>
+                                                        <TableCell component="th" scope="row">
+                                                            {row.collectionId}
+                                                        </TableCell>
+                                                        <TableCell align="right">{row.printedCardNumber}</TableCell>
+                                                        <TableCell align="right">{row.name}</TableCell>
+                                                        <TableCell align="right">{row.set.name}</TableCell>
+                                                        <TableCell align="right">{row.rarity}</TableCell>
+                                                        <TableCell align="right">{row.reverse}</TableCell>
+                                                        <TableCell align="right">{row.set.releaseDate}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+
+
+                                    {/*{this.state.selectedCards.map(card => {*/}
+                                    {/*    return (*/}
+                                    {/*        <CardListItem cardData={card}/>*/}
+                                    {/*    )*/}
+                                    {/*})}*/}
+
+
+                                </ListGroup>
+                            </Form.Group>
+                        </Form.Row>
+                    </Form.Group>
                 </Form.Group>
             </React.Fragment>
 
