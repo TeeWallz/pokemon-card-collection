@@ -124,10 +124,6 @@ class AddCollection extends Component {
     };
 
     CollectionSelector = () => {
-        console.log("-----");
-        console.log(this.props);
-        console.log("-----");
-
         let showCollectionNameBox = false;
         let formContents = (<React.Fragment></React.Fragment>);
 
@@ -152,7 +148,6 @@ class AddCollection extends Component {
                 formContents = (
                     <Form.Group className="mb-3" controlId="formFromSet">
                         {/*<Form.Label>Collection From P</Form.Label>*/}
-
                         <Form.Row>
                             <Form.Group as={Col} sm={5}>
                                 <Multiselect
@@ -163,7 +158,7 @@ class AddCollection extends Component {
                             </Form.Group>
                             <Form.Group as={Col} sm={5}>
                                 <ListGroup defaultActiveKey="#link1" styzle={pokemon_list_style}>
-
+                                    <CardsList cards={this.state.selectedOptions} />
 
                                 </ListGroup>
                             </Form.Group>
@@ -203,9 +198,6 @@ class AddCollection extends Component {
                                   name="collectionName"
                                   value={this.state.collectionName}
                                   onChange={this.onChange}/>
-                    {/*<Form.Text className="text-muted">*/}
-                    {/*    We'll never share your email with anyone else.*/}
-                    {/*</Form.Text>*/}
                 </Form.Group>
                 }
                 <Form.Group className="mb-3" controlId="formSources">

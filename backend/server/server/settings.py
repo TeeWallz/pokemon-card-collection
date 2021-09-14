@@ -137,7 +137,7 @@ DATABASES = {
         'USER': 'pokemon_card_collection',
         'PASSWORD': 'pokemon_card_collection',
         # 'HOST': 'mysql.waller.rocks',   # Or an IP Address that your DB is hosted on
-        'HOST': '127.0.0.1',   # Or an IP Address that your DB is hosted on
+        'HOST': '192.168.0.91',   # Or an IP Address that your DB is hosted on
         # 'HOST': '172.26.9.76',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
     },

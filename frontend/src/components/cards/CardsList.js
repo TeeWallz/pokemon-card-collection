@@ -22,23 +22,12 @@ class CardsList extends Component {
         console.log("Render")
         const {cards} = this.props;
 
-
-
-        if (cards.length === 0) {
-            return <h2>Please add your first card</h2>;
-        }
-
         let items = cards.map(card => {
             return <Card key={card.id} card={card}/>;
         });
 
         return (
-            <div>
-                <h2>Cards</h2>
                 {items}
-                <hr/>
-                {/* a */}
-            </div>
         );
     }
 }
