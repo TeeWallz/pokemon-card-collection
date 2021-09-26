@@ -6,15 +6,10 @@ import {getCards} from "./CardsActions";
 
 import Card from "./Card";
 
-class CardsList extends Component {
-    constructor(props) {
-        super(props);
-    }
+function CardList(props){
 
-    componentDidMount() {
-        console.log("cards componentDidMount")
-        // this.props.getCards();
 
+<<<<<<< HEAD
 
     }
 
@@ -30,19 +25,10 @@ class CardsList extends Component {
                 {items}
         );
     }
+=======
+>>>>>>> 17a4fd013f02d211a0fe7c8a627cd2a1eed155a6
 }
 
-// CardsList.propTypes = {
-//   getCards: PropTypes.func.isRequired,
-//   cards: PropTypes.object.isRequired
-// };
-//
-// const mapStateToProps = state => ({
-//   cards: state.cards
-// });
-//
-// export default connect(mapStateToProps, {
-//   getCards
-// })(withRouter(CardsList));
+function CardListItem(card){
 
-export default CardsList
+}
