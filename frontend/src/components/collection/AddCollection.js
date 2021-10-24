@@ -195,6 +195,28 @@ class AddCollection extends Component {
                 let pokemonNotChosen = "";
                 showCollectionNameBox = true;
                 formContents = (
+<<<<<<< HEAD
+                    <Form.Group className="mb-3" controlId="formFromSet">
+                        {/*<Form.Label>Collection From P</Form.Label>*/}
+                        <Form.Row>
+                            <Form.Group as={Col} sm={5}>
+                                <Multiselect
+                                    options={this.props.pokemonOptions}
+                                    displayValue="label"
+                                    selectedValues={this.state.selectedOptions}
+                                />
+                            </Form.Group>
+                            <Form.Group as={Col} sm={5}>
+                                <ListGroup defaultActiveKey="#link1" styzle={pokemon_list_style}>
+                                    <CardsList cards={this.state.selectedOptions} />
+
+                                </ListGroup>
+                            </Form.Group>
+                        </Form.Row>
+
+
+                    </Form.Group>
+=======
                     <Multiselect
                         options={this.props.pokemonOptions}
                         displayValue="label"
@@ -203,6 +225,7 @@ class AddCollection extends Component {
                         onSelect={this.collectionSourceOnChange}
                         onRemove={this.collectionSourceOnChange}
                     />
+>>>>>>> 17a4fd013f02d211a0fe7c8a627cd2a1eed155a6
                 )
                 break;
             case 'artist':

@@ -51,17 +51,20 @@ export const CardsList = (props) => {
     )
 }
 
-function CardListItem(card) {
-    // let image = cardData.cardData["images"]["small"];
-    // let text = cardData.cardData['id'] + " / " + cardData.cardData['name'];
-    //
-    // return (
-    //     <ListGroup.Item><img style={{width: "20px"}}
-    //                          src={image}/>
-    //         {text}
-    //     </ListGroup.Item>
-    // )
-}
+
+//     render() {
+//         console.log("Render")
+//         const {cards} = this.props;
+//
+//         let items = cards.map(card => {
+//             return <Card key={card.id} card={card}/>;
+//         });
+//
+//         return (
+//                 {items}
+//         );
+//     }
+// }
 
 export const processCardsForList = (cards, includeReverseHolos) => {
 

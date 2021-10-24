@@ -2,6 +2,10 @@ asgiref==3.2.10
 Django==3.1.2
 django-cors-headers==3.5.0
 django-filter==2.4.0
+<<<<<<< HEAD
+django_cors_headers==3.5.0
+mysqlclient
+=======
 django-templated-mail==1.1.1
 djangorestframework==3.11.2
 djoser==2.0.5
@@ -9,3 +13,4 @@ Markdown==3.3
 mysqlclient==2.0.3
 pytz==2021.1
 sqlparse==0.4.1
+>>>>>>> 17a4fd013f02d211a0fe7c8a627cd2a1eed155a6
