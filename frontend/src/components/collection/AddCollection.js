@@ -28,7 +28,7 @@ import Paper from '@material-ui/core/Paper';
 
 import {toastOnError} from "../../utils/Utils";
 import {getArtists, getCardsFilter} from "../cards/CardsActions";
-import CardsList from "../cards/CardsList";
+import {CardsList, processCardsForList} from "../cards/CardsList";
 import {getPokemon} from "../database_objects/pokemon/PokemonsActions";
 
 import ReactMultiSelectCheckboxes from 'react-multiselect-checkboxes';
@@ -57,61 +57,9 @@ function getDropdownButtonLabel({placeholderButtonLabel, value}) {
     }
 }
 
-function CardListItem(cardData) {
-    let image = cardData.cardData["images"]["small"];
-    let text = cardData.cardData['id'] + " / " + cardData.cardData['name'];
 
-    return (
-        <ListGroup.Item><img style={{width: "20px"}}
-                             src={image}/>
-            {text}
-        </ListGroup.Item>
-    )
-}
 
-function isNumeric(str) {
-    if (typeof str != "string") return false // we only process strings!
-    return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
-        !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
-}
 
-function processCardsForList(cards, includeReverseHolos) {
-
-    let resultCards = [];
-
-    for (let i = 0; i < cards.length; i++) {
-        cards[i]['collectionId'] = i;
-        cards[i]['printedCardNumber'] = (isNumeric(cards[i].number)) ? cards[i].number + "/" + cards[i].set.total : cards[i].number;
-        if (!(includeReverseHolos)) {
-            resultCards.push(cards[i])
-            continue
-        }
-
-        let rarities = Object.keys(cards[i].tcgplayer.prices);
-        let excludeRarities = ['1stEditionNormal']
-
-        for (let j = 0; j < rarities.length; j++) {
-            // Clone dict for each rarity
-            if(rarities[j] in excludeRarities){
-                continue;
-            }
-
-            let additions = {
-                reverse: rarities[j]
-            }
-            let copy = {...cards[i], ...additions};
-            resultCards.push(copy)
-        }
-
-    }
-
-    return resultCards;
-    // let processedCards = cards.map((card, index) => Object.assign({}, card, {
-    //     collectionId: index,
-    //     printedCardNumber: (isNumeric(card.number)) ? card.number + "/" + card.set.total : card.number,
-    //     rarities: Object.keys({card.tcgplayer.prices, ...'1stEditionHolofoil').join(","),
-    // }))
-}
 
 
 class AddCollection extends Component {
@@ -300,47 +248,9 @@ class AddCollection extends Component {
                                 {formContents}
                             </Form.Group>
                             <Form.Group as={Col} sm={7}>
-                                <ListGroup defaultActiveKey="#link1" style={pokemon_list_style}>
-                                    <TableContainer component={Paper}>
-                                        <Table style={{minWidth: "100%",}} size="small" aria-label="a dense table">
-                                            <TableHead>
-                                                <TableRow>
-                                                    <TableCell>#</TableCell>
-                                                    <TableCell align="right">Num</TableCell>
-                                                    <TableCell align="right">Name</TableCell>
-                                                    <TableCell align="right">Set</TableCell>
-                                                    <TableCell align="right">Rarity</TableCell>
-                                                    <TableCell align="right">Reverse</TableCell>
-                                                    <TableCell align="right">Date</TableCell>
-                                                </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                                {this.state.selectedCards.map((row) => (
-                                                    <TableRow key={row.id}>
-                                                        <TableCell component="th" scope="row">
-                                                            {row.collectionId}
-                                                        </TableCell>
-                                                        <TableCell align="right">{row.printedCardNumber}</TableCell>
-                                                        <TableCell align="right">{row.name}</TableCell>
-                                                        <TableCell align="right">{row.set.name}</TableCell>
-                                                        <TableCell align="right">{row.rarity}</TableCell>
-                                                        <TableCell align="right">{row.reverse}</TableCell>
-                                                        <TableCell align="right">{row.set.releaseDate}</TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    </TableContainer>
 
+                                <CardsList cards={this.state.selectedCards} />
 
-                                    {/*{this.state.selectedCards.map(card => {*/}
-                                    {/*    return (*/}
-                                    {/*        <CardListItem cardData={card}/>*/}
-                                    {/*    )*/}
-                                    {/*})}*/}
-
-
-                                </ListGroup>
                             </Form.Group>
                         </Form.Row>
                     </Form.Group>
