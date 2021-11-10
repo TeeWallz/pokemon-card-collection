@@ -1,47 +1,84 @@
-# DIY Django and React Boilerplate for SaaS
+# Sails.js + React.js Examples
 
-It is do-it-yourself Django + React Boilerplate for starting your SaaS application. In existing boilerplates for Django+React (or just for Django) there are very often too many features provided (do you really need traefik for MVP?). So before starting, you need to remove a lot of functionality that you don't need or simply don't understand. 
+Inspired by the React.js tutorials, these examples shows ways to integrate Sails.js as the real time persistent backend model to a React.js frontend. 
+Two examples are provided: a markdown chat application and the TodoMVC application. Both showcasing the real time capabilities for multiple clients.
 
-I decided to create a simple Django+React boilerplate with step-by-step instructions how to build it. During building you can decide what you need or not. And for sure you learn a lot about Django and React. I hope it will provide good and quick starting point for creating SaaS applications. I would like to create real SaaS applications based on this boilerplate with step-by-step tutorials how they were created. They will be available at [SaaSitive](https://saasitive.com) website.
+#### References
+* [Sails Tutorial](https://www.youtube.com/watch?v=uxojCaDSyZA)
+* [React Tutorial](http://facebook.github.io/react/docs/tutorial.html)
+* [React Animation](http://facebook.github.io/react/docs/animation.html)
+* [React TodoMVC](https://github.com/tastejs/todomvc/tree/gh-pages/architecture-examples/react)
+* [RequireJS](http://requirejs.org/)
 
-## Features (already implemented or planned)
+## Run Instructions
 
-- Backend with Django Rest Framework
-- Frontend with React 
-- Bootstrap for styling
-- Deployment with docker-compose on single VPS
-- SSL certificate from Let's encrypt
-- PostgreSQL database (not yet configured)
-- Authentication with DRF `authtoken` and [Djoser](https://djoser.readthedocs.io/en/latest/)
-- AWS SES for Email sending (not yet implemented)
-- python-decuple for secrets
-- Payments with Stripe (not yet implemented)
-- Step-by-step instructions how to deploy and how to update application
-
-## Live Website
-
-You can play with this bolierplate at: [https://boilerplate.saasitive.com](https://boilerplate.saasitive.com) - deployed to t2.micro EC2 instance with docker-compose.
-
-## Step-by-step instructions:
-1. [Starting SaaS with Django and React](https://saasitive.com/tutorial/django-react-boilerplate-saas/) (tag [v1](https://github.com/saasitive/django-react-boilerplate/tree/v1)) 
-2. [React Routing and Components for Signup and Login](https://saasitive.com/tutorial/react-routing-components-signup-login/) (tag [v2](https://github.com/saasitive/django-react-boilerplate/tree/v2))
-3. [Token Based Authentication with Django Rest Framework and Djoser](https://saasitive.com/tutorial/token-based-authentication-django-rest-framework-djoser/) (tag [v3](https://github.com/saasitive/django-react-boilerplate/tree/v3))
-4. [React Token Based Authentication to Django REST API Backend](https://saasitive.com/tutorial/react-token-based-authentication-django/) (tag [v4](https://github.com/saasitive/django-react-boilerplate/tree/v4))
-5. [React Authenticated Component](https://saasitive.com/tutorial/react-authenticated-component/)  (tag [v5](https://github.com/saasitive/django-react-boilerplate/tree/v5))
-6. [CRUD in Django Rest Framework and React](https://saasitive.com/tutorial/crud-django-rest-framework-react/) (tag [v6](https://github.com/saasitive/django-react-boilerplate/tree/v6))
-7. [Docker-Compose for Django and React with Nginx reverse-proxy and Let's encrypt certificate](https://saasitive.com/tutorial/docker-compose-django-react-nginx-let-s-encrypt/) (tag [v7](https://github.com/saasitive/django-react-boilerplate/tree/v7))
-8. [Django Rest Framework Email Verification](https://saasitive.com/tutorial/django-rest-framework-email-verification/) (tag [v8](https://github.com/saasitive/django-react-boilerplate/tree/v8))
-9. [Django Rest Framework Reset Password](https://saasitive.com/tutorial/django-rest-framework-reset-password/) (tag [v9](https://github.com/saasitive/django-react-boilerplate/tree/v9))
+#### Prerequisites
+* git
+* [nodejs](http://nodejs.org)
+* [npm](http://npmjs.org)
+* [bower](http://bower.io)
 
 
-More articles coming soon!
+```bash
+git clone https://github.com/mixxen/sails-react-example.git
+cd sails-react-example
+npm install
+bower install
+node app.js
+open http://localhost:1337 (open multiple windows to see real time capabilities of Sailsjs)
+```
+
+## Start from Scratch
+1. Install Sails
+
+   ```
+   sudo npm -g install sails
+   ```
+
+2. Create new Sails project
+
+   ```
+   sails new sails-react-example
+   ```
+
+3. Change directory to ```sails-react-example```
+
+4. Install grunt-babel
+
+   ```
+   npm install grunt-babel babel-preset-es2015 babel-preset-react --save
+   ```
+
+4. Edit ```compileAssets.js syncAssets.js config/babel.js``` to support jsx files
+
+5. Install bower and add components (see ```bower.json```)
+
+  ```
+  npm install bower --save
+  ```
+
+6. Create ```assets/styles/styles.css``` for styles and animation css 
+
+7. Create models and controllers
+
+   ```
+   sails generate comment
+   ```
+8. Edit ```views/xxx.ejs``` and put ```<div class="container" id="myComponent"></div>``` somewhere
+
+9. Be sure to call ```ReactDOM.render``` somewhere and reference the div in previous step. Example:
+
+   ```javascript
+   ReactDOM.render(
+     <CommentBox url="/comment" data={message} />,
+     document.getElementById('myComponent')
+   );
+   ```
 
 ## Screenshots
 
-<kbd><img src="https://raw.githubusercontent.com/saasitive/media/main/home_view.png" /></kbd>
+![alt tag](todosmvc.png)
 
-<kbd><img src="https://raw.githubusercontent.com/saasitive/media/main/signup.png" /></kbd>
+## Todo
 
-<kbd><img src="https://raw.githubusercontent.com/saasitive/media/main/login.png" /></kbd>
-
-<kbd><img src="https://raw.githubusercontent.com/saasitive/media/main/dashboard.png" /></kbd>
+* Webpack instead of RequireJS (see [react-webpack-express](https://github.com/mixxen/react-webpack-express) for express boilerplate)
