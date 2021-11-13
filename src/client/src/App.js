@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
@@ -12,12 +12,14 @@ import Profile from "./components/profile.component";
 import BoardUser from "./components/board-user.component";
 import BoardModerator from "./components/board-moderator.component";
 import BoardAdmin from "./components/board-admin.component";
+import BoardCollections from "./components/collections-list.component";
+import CreateCollection from "./components/collections-create.component"
 
 import { logout } from "./actions/auth";
+
 import { clearMessage } from "./actions/message";
 
 import { history } from './helpers/history';
-
 import AuthVerify from "./common/auth-verify";
 
 class App extends Component {
@@ -40,6 +42,8 @@ class App extends Component {
     const user = this.props.user;
 
     if (user) {
+      console.log(user.roles)
+
       this.setState({
         currentUser: user,
         showModeratorBoard: user.roles.includes("ROLE_MODERATOR"),
@@ -59,6 +63,10 @@ class App extends Component {
 
   render() {
     const { currentUser, showModeratorBoard, showAdminBoard } = this.state;
+    const user = this.props.user;
+
+    console.log(user?.roles);
+    console.log("haha");
 
     return (
         <Router history={history}>
@@ -67,6 +75,7 @@ class App extends Component {
               <Link to={"/"} className="navbar-brand">
                 bezKoder
               </Link>
+
               <div className="navbar-nav mr-auto">
                 <li className="nav-item">
                   <Link to={"/home"} className="nav-link">
@@ -74,7 +83,7 @@ class App extends Component {
                   </Link>
                 </li>
 
-                {showModeratorBoard && (
+                {user?.roles.includes("ROLE_MODERATOR") && (
                     <li className="nav-item">
                       <Link to={"/mod"} className="nav-link">
                         Moderator Board
@@ -82,13 +91,20 @@ class App extends Component {
                     </li>
                 )}
 
-                {showAdminBoard && (
+                {user?.roles.includes("ROLE_ADMIN")   && (
                     <li className="nav-item">
                       <Link to={"/admin"} className="nav-link">
                         Admin Board
                       </Link>
                     </li>
                 )}
+
+                <li className="nav-item">
+                  <Link to={"/collections"} className="nav-link">
+                    Collections
+                  </Link>
+                </li>
+
 
                 {currentUser && (
                     <li className="nav-item">
@@ -131,16 +147,24 @@ class App extends Component {
 
             <div className="container mt-3">
               <Routes>
-                <Route exact path={["/", "/home"]} component={Home} />
-                <Route exact path="/login" component={Login} />
-                <Route exact path="/register" component={Register} />
-                <Route exact path="/profile" component={Profile} />
-                <Route path="/user" component={BoardUser} />
-                <Route path="/mod" component={BoardModerator} />
-                <Route path="/admin" component={BoardAdmin} />
+                <Route exact path={"/"} element={<Home/>} />
+                <Route exact path={"/home"} element={<Home/>} />
+
+                <Route exact path="/login" element={<Login/>} />
+                <Route exact path="/register" element={<Register/>} />
+                <Route exact path="/profile" element={<Profile/>} />
+                <Route path="/user" element={<BoardUser/>} />
+                <Route path="/mod" element={<BoardModerator/>} />
+                <Route path="/admin" element={<BoardAdmin/>} />
+
+                <Route path="/collections" element={<BoardCollections/>} />
+                <Route path="/collection/create" element={<CreateCollection/>} />
+
+
+
               </Routes>
             </div>
-            <AuthVerify logOut={this.logOut}/>
+            <AuthVerify logOut={this.logOut}  history={history}/>
           </div>
         </Router>
     );

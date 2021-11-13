@@ -28,6 +28,9 @@ db.user = require("./user.models.js")(sequelize, Sequelize);
 db.role = require("./role.model.js")(sequelize, Sequelize);
 db.refreshToken = require("../models/refreshToken.model.js")(sequelize, Sequelize);
 
+db.collection = require("./collection.model")(sequelize, Sequelize);
+
+
 db.role.belongsToMany(db.user, {
     through: "user_roles",
     foreignKey: "roleId",
@@ -43,6 +46,12 @@ db.refreshToken.belongsTo(db.user, {
 });
 db.user.hasOne(db.refreshToken, {
     foreignKey: 'userId', targetKey: 'id'
+});
+
+db.collection.belongsToMany(db.role, {
+    through: "user_collections",
+    foreignKey: "collectionId",
+    otherKey: "userId"
 });
 
 db.ROLES = ["user", "admin", "moderator"];

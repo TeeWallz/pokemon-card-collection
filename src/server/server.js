@@ -23,36 +23,37 @@ app.get("/", (req, res) => {
 // routes
 require('./app/routes/auth.routes')(app);
 require('./app/routes/user.routes')(app);
+require('./app/routes/collection.routes')(app);
 
 
 const db = require("./app/models");
 const Role = db.role;
 
 console.log("Syncing DB")
-db.sequelize.sync({force: true}).then(() => {
-    console.log('Drop and Resync Db');
-    initial();
-});
-
-function initial() {
-    Role.create({
-        id: 1,
-        name: "user"
-    });
-
-    Role.create({
-        id: 2,
-        name: "moderator"
-    });
-
-    Role.create({
-        id: 3,
-        name: "admin"
-    });
-    console.log("Syncing DB Done.")
-
-}
-
+// db.sequelize.sync({force: true}).then(() => {
+//     console.log('Drop and Resync Db');
+//     initial();
+// });
+//
+// function initial() {
+//     Role.create({
+//         id: 1,
+//         name: "user"
+//     });
+//
+//     Role.create({
+//         id: 2,
+//         name: "moderator"
+//     });
+//
+//     Role.create({
+//         id: 3,
+//         name: "admin"
+//     });
+//     console.log("Syncing DB Done.")
+//
+// }
+db.sequelize.sync();
 
 
 
