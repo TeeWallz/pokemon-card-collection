@@ -13,12 +13,32 @@ function HandleClick(path) {
     navigation.push(path);
 }
 
-class BoardCollections extends Component {
+class CollectionView extends Component {
     constructor(props) {
         super(props);
 
+        CollectionService.getAll().then(
+            response => {
+                this.setState({
+                    collections: response.data
+                });
+            },
+            error => {
+                this.setState({
+                    content:
+                        (error.response &&
+                            error.response.data &&
+                            error.response.data.message) ||
+                        error.message ||
+                        error.toString()
+                });
+            }
+        );
+
+
         this.state = {
-            collections: []
+            collections: [],
+            collectionId: this.props.id,
         };
     }
 
@@ -65,7 +85,7 @@ class BoardCollections extends Component {
                     <tbody>
 
                     {this.state.collections.map(function (collection, i) {
-                        // console.log(collection);
+                        console.log(collection);
                         return (
                             <tr key={i}>
                                 <td>{collection.name}</td>
@@ -85,11 +105,11 @@ class BoardCollections extends Component {
             <div className="container">
                 <header className="jumbotron">
                     {/*<h3>{this.state.content}</h3>*/}
-                    <h1>All Collections</h1>
-                    <Link to="/collection/create" className="btn btn-primary">Create Collection</Link>
+                    <h1>Collection - {this.state.collectionId}</h1>
                     <div>
-                        {collectionList}
+                        fuck this
                     </div>
+                    haha!
                 </header>
             </div>
         );
@@ -104,4 +124,4 @@ function mapStateToProps(state) {
 }
 
 
-export default connect(mapStateToProps)(BoardCollections);
+export default connect(mapStateToProps)(CollectionView);

@@ -14,6 +14,7 @@ import BoardModerator from "./components/board-moderator.component";
 import BoardAdmin from "./components/board-admin.component";
 import BoardCollections from "./components/collections-list.component";
 import CreateCollection from "./components/collections-create.component"
+import ViewCollection from "./components/collections-view.component.js"
 
 import { logout } from "./actions/auth";
 
@@ -21,6 +22,9 @@ import { clearMessage } from "./actions/message";
 
 import { history } from './helpers/history';
 import AuthVerify from "./common/auth-verify";
+import NotFound from "./components/NotFound";
+import CollectiomViewWrapper from "./components/collection-view.function";
+import CollectionViewWrapper from "./components/collection-view.function";
 
 class App extends Component {
   constructor(props) {
@@ -157,8 +161,13 @@ class App extends Component {
                 <Route path="/mod" element={<BoardModerator/>} />
                 <Route path="/admin" element={<BoardAdmin/>} />
 
-                <Route path="/collections" element={<BoardCollections/>} />
-                <Route path="/collection/create" element={<CreateCollection/>} />
+                <Route path="/collection" element={<BoardCollections/>}>
+                  <Route path="/collection/create" element={<CreateCollection/>} />
+                </Route>
+                <Route path="/collection/:id" element={<CollectionViewWrapper/>} />
+
+                <Route path="*" element={<NotFound/>} />
+
 
 
 

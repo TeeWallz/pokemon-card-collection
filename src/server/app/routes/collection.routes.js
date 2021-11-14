@@ -14,10 +14,13 @@ module.exports = function(app) {
 
     app.post(
         "/api/collection/create",
-        [
-
-        ],
+        [authJwt.verifyToken],
         controller.createCollection
+    );
+
+    app.get(
+        "/api/collection/:collectionId",
+        controller.getOne
     );
 
     //

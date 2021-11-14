@@ -29,6 +29,7 @@ db.role = require("./role.model.js")(sequelize, Sequelize);
 db.refreshToken = require("../models/refreshToken.model.js")(sequelize, Sequelize);
 
 db.collection = require("./collection.model")(sequelize, Sequelize);
+db.collectionCard = require("./collectionCard.model")(sequelize, Sequelize);
 
 
 db.role.belongsToMany(db.user, {
@@ -48,11 +49,48 @@ db.user.hasOne(db.refreshToken, {
     foreignKey: 'userId', targetKey: 'id'
 });
 
-db.collection.belongsToMany(db.role, {
-    through: "user_collections",
-    foreignKey: "collectionId",
-    otherKey: "userId"
-});
+// db.collectionCard.belongsTo(db.collection, {
+//     foreignKey: 'collectionId', targetKey: 'id'
+// });
+// db.collectionCard.belongsTo(db.collectionCard, {
+//     foreignKey: 'collectionId', targetKey: 'id'
+// });
+
+
+// db.collectionCard.hasOne(db.collection, {as: 'collection'})
+// db.collection.hasOne(db.user, {as: "creator"});
+//
+
+
+db.collection.belongsToMany(
+    db.collectionCard,
+    {
+        // this can be string (model name) or a Sequelize Model Object Class
+        // through is compulsory since v2
+        through: 'collection_collectionCard',
+
+        // GOTCHA
+        // note that this is the Parent's Id, not Child.
+        foreignKey: 'collection_collectionId'
+    }
+)
+
+/*
+The above reads:
+"Parents" belongs to many "Children", and is recorded in the "Parent_child" table, using "Parents"'s ID.
+*/
+
+db.collectionCard.belongsToMany(
+    db.collection,
+    {
+        through: 'collection_collectionCard',
+
+        // GOTCHA
+        // note that this is the Child's Id, not Parent.
+        foreignKey: 'collectionCard_collectionCardId'
+    }
+)
+
 
 db.ROLES = ["user", "admin", "moderator"];
 

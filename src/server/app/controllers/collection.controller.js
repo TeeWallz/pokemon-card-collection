@@ -20,6 +20,39 @@ exports.getAll = (req, res) => {
         });
 };
 
+exports.getOne = (req, res) => {
+
+    // Collection.findAll({
+    //     where: {'id': id},
+    //     include: [{
+    //         model: models.Employee,
+    //         required: true,
+    //         as: 'employee',
+    //         include: [{
+    //             model: models.Manager,
+    //             required: true,
+    //             as: 'manager',
+    //             where: { id: managerId },
+    //         }],
+    //     }]
+    // })
+
+    Collection.findOne({
+        // include: [{
+        //     // model: Artists,
+        //     // as: 'Singer',
+        // }],
+        where: {id: req.params.collectionId}
+    })
+        .then(collection => {
+            const response = JSON.stringify(collection, null, 2)
+            res.status(200).send(response);
+        })
+        .catch(err => {
+            res.status(500).send({message: err.message});
+        });
+};
+
 exports.createCollection = (req, res) => {
     const utils =  require("../middleware/utils");
 
@@ -42,9 +75,10 @@ exports.createCollection = (req, res) => {
     // Save User to Database
     Collection.create({
         name: req.body.name,
+        userId: req.user.id
     })
         .then(collection => {
-            res.status(200).send({message: JSON.stringify(collection)});
+                res.send(JSON.stringify(collection));
         })
         .catch(err => {
             res.status(500).send({ message: err.message });

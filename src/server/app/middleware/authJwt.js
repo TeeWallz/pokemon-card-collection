@@ -24,7 +24,11 @@ const verifyToken = (req, res, next) => {
             return catchError(err, res);
         }
         req.userId = decoded.id;
-        next();
+        User.findByPk(req.userId).then(user => {
+            req.user = user;
+            next();
+        })
+
     });
 };
 
