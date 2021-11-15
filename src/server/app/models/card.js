@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-    const Collection = sequelize.define("collections", {
+    const card = sequelize.define("card", {
         id: {
             type: Sequelize.UUID,
             defaultValue: Sequelize.UUIDV1,
@@ -10,5 +10,5 @@ module.exports = (sequelize, Sequelize) => {
         }
     });
 
-    return Collection;
+    return card;
 };

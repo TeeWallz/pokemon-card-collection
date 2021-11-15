@@ -23,6 +23,11 @@ module.exports = function(app) {
         controller.getOne
     );
 
+    app.put(
+        "/api/collection/:collectionId",
+        controller.updateCollection
+    );
+
     //
     // app.get(
     //     "/api/test/mod",
