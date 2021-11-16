@@ -52,8 +52,8 @@ db.user.hasOne(db.refreshToken, {
     foreignKey: 'userId', targetKey: 'id'
 });
 
-db.card.belongsToMany(db.collection, { through: db.collectionCard , as: 'card'});
-db.collection.belongsToMany(db.card, { through: db.collectionCard, as: 'collection' });
+db.card.belongsToMany(db.collection, { through: db.collectionCard , as: 'collection'});
+db.collection.belongsToMany(db.card, { through: db.collectionCard, as: 'cards' });
 
 
 

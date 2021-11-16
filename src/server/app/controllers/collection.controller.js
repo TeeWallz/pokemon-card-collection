@@ -40,7 +40,11 @@ exports.getOne = (req, res) => {
         //     // model: Artists,
         //     // as: 'Singer',
         // }],
-        where: {id: req.params.collectionId}
+        where: {id: req.params.collectionId},
+        include: [{
+            model: Card,
+            as: 'cards',
+        }]
     })
         .then(collection => {
             const response = JSON.stringify(collection, null, 2)
@@ -95,20 +99,33 @@ exports.updateCollection = (req, res) => {
         where: {id: req.params.collectionId}
     })
         .then(collection => {
-            const cards = req.body.cards.map(v => ({...v, collectionId: collection.id}))
-            const cardCreatePromise = CollectionCard.bulkCreate(cards,
-                {
-                    fields: ["cardId", "collectionId", "count"],
-                    updateOnDuplicate: ["count"]
-                })
-                .catch(err => {
-                    res.status(500).send({message: err.message});
-                });
-            const collectionUpdatePromise = collection.update({
-                name:req.body.name
-            })
+            let promisesToDo = []
 
-            Promise.all([cardCreatePromise, collectionUpdatePromise]).then((values) => {
+            if('name' in req.body) {
+                promisesToDo.push(
+                    collection.update({
+                        name: req.body.name
+                    })
+                )
+            }
+
+
+            if('cards' in req.body) {
+                const cards = req.body.cards.map(v => ({...v, collectionId: collection.id}))
+                promisesToDo.push(
+                    CollectionCard.bulkCreate(cards,
+                        {
+                            fields: ["cardId", "collectionId", "count"],
+                            updateOnDuplicate: ["count"]
+                        })
+                        .catch(err => {
+                            res.status(500).send({message: err.message});
+                        })
+                )
+            }
+
+
+            Promise.all(promisesToDo).then((values) => {
                 res.send({message: "OK!"});
             });
 
