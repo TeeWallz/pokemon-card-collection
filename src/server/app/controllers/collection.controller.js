@@ -1,5 +1,3 @@
-
-
 const db = require("../models");
 const config = require("../config/auth.config");
 const {user: User, role: Role, collection: Collection, refreshToken: RefreshToken, card: Card, collectionCard: CollectionCard} = db;
@@ -54,19 +52,19 @@ exports.getOne = (req, res) => {
 };
 
 exports.createCollection = (req, res) => {
-    const utils =  require("../middleware/utils");
+    const utils = require("../middleware/utils");
 
     // Check for missing parameters
     const missingProps = utils.checkPropsExist(req.body, ['name'])
-    if(!(missingProps.success)){
-        res.status(422).send({ message: "Missing parameters: '" + missingProps.missingString + "'"});
+    if (!(missingProps.success)) {
+        res.status(422).send({message: "Missing parameters: '" + missingProps.missingString + "'"});
         return
     }
 
     // Check for empty parameters
     const emptyProps = utils.checkPropsNotEmpty(req.body, ['name'])
-    if(!(emptyProps.success)){
-        res.status(422).send({ message: "Parameters empty: '" + emptyProps.missingString + "'"});
+    if (!(emptyProps.success)) {
+        res.status(422).send({message: "Parameters empty: '" + emptyProps.missingString + "'"});
         return
     }
 
@@ -79,58 +77,49 @@ exports.createCollection = (req, res) => {
         ]
     })
         .then(collection => {
-                collection.setCards([1])
-                    .catch(err => {
-                        res.status(500).send({ message: err.message });
-                    });
-                res.send(JSON.stringify(collection));
+            collection.setCards([1])
+                .catch(err => {
+                    res.status(500).send({message: err.message});
+                });
+            res.send(JSON.stringify(collection));
         })
         .catch(err => {
-            res.status(500).send({ message: err.message });
+            res.status(500).send({message: err.message});
         });
 };
 
 exports.updateCollection = (req, res) => {
-    const utils =  require("../middleware/utils");
-
+    const utils = require("../middleware/utils");
 
     Collection.findOne({
         where: {id: req.params.collectionId}
     })
         .then(collection => {
-
-            const dataArray = [
+            const cards = req.body.cards.map(v => ({...v, collectionId: collection.id}))
+            const cardCreatePromise = CollectionCard.bulkCreate(cards,
                 {
-                    "collectionId": collection.id,
-                    "cardId": 1,
-                    "count": 70,
-                },
-                {
-                    "collectionId": collection.id,
-                    "cardId": 2,
-                    "count": 421,
-                }
-            ]
-
-            CollectionCard.bulkCreate(dataArray,
-                {
-                    fields:["cardId", "collectionId", "count"] ,
+                    fields: ["cardId", "collectionId", "count"],
                     updateOnDuplicate: ["count"]
-                } )
-                .then(result => {
-                    res.send(JSON.stringify(result));
                 })
                 .catch(err => {
-                    res.status(500).send({ message: err.message });
+                    res.status(500).send({message: err.message});
                 });
+            const collectionUpdatePromise = collection.update({
+                name:req.body.name
+            })
+
+            Promise.all([cardCreatePromise, collectionUpdatePromise]).then((values) => {
+                res.send({message: "OK!"});
+            });
 
 
-            // const response = JSON.stringify(collection, null, 2)
-            // res.status(200).send(response);
+
         })
         .catch(err => {
             res.status(500).send({message: err.message});
         });
+
+
 
 };
 
