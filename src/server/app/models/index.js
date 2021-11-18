@@ -1,20 +1,20 @@
-const config = require("../config/db.config.js");
+const serverDbConfig = require("../config/db.config.js");
 
 const Sequelize = require("sequelize");
-const sequelize = new Sequelize(
-    config.DB,
-    config.USER,
-    config.PASSWORD,
+const serverDb = new Sequelize(
+    serverDbConfig.DB,
+    serverDbConfig.USER,
+    serverDbConfig.PASSWORD,
     {
-        host: config.HOST,
-        dialect: config.dialect,
+        host: serverDbConfig.HOST,
+        dialect: serverDbConfig.dialect,
         operatorsAliases: false,
 
         pool: {
-            max: config.pool.max,
-            min: config.pool.min,
-            acquire: config.pool.acquire,
-            idle: config.pool.idle
+            max: serverDbConfig.pool.max,
+            min: serverDbConfig.pool.min,
+            acquire: serverDbConfig.pool.acquire,
+            idle: serverDbConfig.pool.idle
         }
     }
 );
@@ -22,15 +22,19 @@ const sequelize = new Sequelize(
 const db = {};
 
 db.Sequelize = Sequelize;
-db.sequelize = sequelize;
+db.serverDb = serverDb;
+db.pokemonTcgDb = serverDb;
 
-db.user = require("./user.models.js")(sequelize, Sequelize);
-db.role = require("./role.model.js")(sequelize, Sequelize);
-db.refreshToken = require("../models/refreshToken.model.js")(sequelize, Sequelize);
+db.user = require("./server/user.models.js")(serverDb, Sequelize);
+db.role = require("./server/role.model.js")(serverDb, Sequelize);
+db.refreshToken = require("./server/refreshToken.model.js")(serverDb, Sequelize);
 
-db.collection = require("./collection.model")(sequelize, Sequelize);
-db.card = require("./card")(sequelize, Sequelize);
-db.collectionCard = require("./collectionCard.model")(sequelize, Sequelize);
+db.collection = require("./server/collection.model")(serverDb, Sequelize);
+db.card = require("./server/card")(serverDb, Sequelize);
+
+
+
+db.collectionCard = require("./server/collectionCard.model")(serverDb, Sequelize);
 
 
 db.role.belongsToMany(db.user, {

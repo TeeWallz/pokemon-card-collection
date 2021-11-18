@@ -53,7 +53,7 @@ console.log("Syncing DB")
 //     console.log("Syncing DB Done.")
 //
 // }
-db.sequelize.sync();
+db.serverDb.sync();
 
 
 
