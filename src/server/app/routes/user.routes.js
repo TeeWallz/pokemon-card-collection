@@ -12,11 +12,7 @@ module.exports = function(app) {
 
     app.get("/api/test/all", controller.allAccess);
 
-    app.get(
-        "/api/test/user",
-        [authJwt.verifyToken],
-        controller.userBoard
-    );
+    app.get("/api/test/user", [authJwt.verifyToken], controller.userBoard);
 
     app.get(
         "/api/test/mod",
@@ -29,4 +25,12 @@ module.exports = function(app) {
         [authJwt.verifyToken, authJwt.isAdmin],
         controller.adminBoard
     );
+
+
+    app.post(
+        "/api/collection/create",
+        [authJwt.verifyToken],
+        controller.createCollection
+    );
+
 };

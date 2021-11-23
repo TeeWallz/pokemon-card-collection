@@ -1,0 +1,23 @@
+Bezkoders
+react
+mysql
+auth
+example
+
+Reason for archive:
+* Having cards etc as hard coded schemas is hard for future changes/tcgs
+* Going cross database with cards in one and auth in another is difficult with sequalize
+
+
+
+Step 1 follows to set up JWT Auth API
+
+    https://www.bezkoder.com/node-js-jwt-authentication-mysql/
+
+Step 2 to enable refresh Token
+
+    https://www.bezkoder.com/jwt-refresh-token-node-js/
+
+Step 3 to create front end
+
+    https://www.bezkoder.com/react-redux-jwt-auth/
