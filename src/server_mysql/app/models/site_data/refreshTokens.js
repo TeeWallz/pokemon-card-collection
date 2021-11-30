@@ -19,7 +19,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     userId: {
-      type: DataTypes.INTEGER,
+      type: Sequelize.UUID,
       allowNull: true,
       references: {
         model: 'users',

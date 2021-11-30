@@ -23,6 +23,11 @@ module.exports = function(app) {
         controller.getOne
     );
 
+    app.get(
+        "/api/collection",
+        controller.getFilter
+    );
+
     app.put(
         "/api/collection/:collectionId",
         controller.updateCollection

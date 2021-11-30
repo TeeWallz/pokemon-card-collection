@@ -26,66 +26,35 @@ exports.getAll = (req, res) => {
 };
 
 exports.getOne = (req, res) => {
-
-    collectionUtils.getModelSummary({id: req.params.collectionId})
-        .then(collection => {
-            const response = JSON.stringify(collection, null, 2)
-            res.status(200).send(response);
+    collectionUtils.getCollectionDetail({id: req.params.collectionId})
+        .then((collection) => {
+            res.send(collection);
         })
-        .catch(err => {
-            console.log(err)
-            res.status(500).send({message: err.message});
-        });
+
 };
 
+exports.getFilter = (req, res) => {
+    collectionUtils.returnCollectionSummary(res, req.params.filter)
+};
+
+
 exports.createCollection = (req, res) => {
-    const utils = require("../middleware/utils");
-
+    // const utils = require("../middleware/utils");
     // Check for missing parameters
-    const missingProps = utils.checkPropsExist(req.body, ['name'])
-    if (!(missingProps.success)) {
-        res.status(422).send({message: "Missing parameters: '" + missingProps.missingString + "'"});
-        return
-    }
-
     // Check for empty parameters
-    const emptyProps = utils.checkPropsNotEmpty(req.body, ['name'])
-    if (!(emptyProps.success)) {
-        res.status(422).send({message: "Parameters empty: '" + emptyProps.missingString + "'"});
-        return
-    }
-
     let cards = []
-    if('cards' in req.body){
-        cards = req.body.cards;
-    }
+    if('cards' in req.body){ cards = req.body.cards; }
 
     // Save Collection to Database
     Collection.create({
         name: req.body.name,
+        creatorId: req.user.id
     })
         .then(collection => {
             collection.setCards(cards)
-                .then(haha => {
-                    collectionUtils.getModelSummary({id: collection.id})
-                    // Collection.findOne({
-                    //     where: {id: collection.id}
-                    //     // attributes: {
-                    //     //     include: [[db.Sequelize.fn("COUNT", db.Sequelize.col("collectionCards.collectionId")), "sensorCount"]]
-                    //     // },
-                    // })
-                        .then(collection => {
-                            const response = JSON.stringify(collection, null, 2)
-                            res.status(200).send(response);
-                        })
-                        .catch(err => {
-                            console.log(err)
-                            res.status(500).send({message: err.message});
-                        });
+                .then(() => {
+                    collectionUtils.returnCollectionSummary(res, {id:collection.id})
                 })
-                .catch(err => {
-                    res.status(500).send({message: err.message});
-                });
         })
         .catch(err => {
             res.status(500).send({message: err.message});
@@ -93,7 +62,7 @@ exports.createCollection = (req, res) => {
 };
 
 exports.updateCollection = (req, res) => {
-    const utils = require("../middleware/utils");
+    // const utils = require("../middleware/utils");
 
     Collection.findOne({
         where: {id: req.params.collectionId}
@@ -109,7 +78,6 @@ exports.updateCollection = (req, res) => {
                 )
             }
 
-
             if('cards' in req.body) {
                 const cards = req.body.cards.map(v => ({...v, collectionId: collection.id}))
                 promisesToDo.push(
@@ -117,9 +85,6 @@ exports.updateCollection = (req, res) => {
                         {
                             fields: ["cardId", "collectionId", "count"],
                             updateOnDuplicate: ["count"]
-                        })
-                        .catch(err => {
-                            res.status(500).send({message: err.message});
                         })
                 )
             }

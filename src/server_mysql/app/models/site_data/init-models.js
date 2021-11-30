@@ -19,7 +19,10 @@ function initModels(sequelize, tcgModels) {
   users.belongsToMany(roles, { as: 'roles', through: user_roles, foreignKey: "userId", otherKey: "roleId" });
   tcgModels.card.belongsToMany(collections, { as: 'collections', through: collectionCards, foreignKey: "cardId", otherKey: "collectionId" });
   collectionCards.belongsTo(collections, { as: "collection", foreignKey: "collectionId"});
+
   collections.hasMany(collectionCards, { as: "collectionCards", foreignKey: "collectionId"});
+  collections.hasMany(collectionCards, { as: "collectionCards_alias2", foreignKey: "collectionId"});
+
   user_roles.belongsTo(roles, { as: "role", foreignKey: "roleId"});
   roles.hasMany(user_roles, { as: "user_roles", foreignKey: "roleId"});
   refreshTokens.belongsTo(users, { as: "user", foreignKey: "userId"});
@@ -28,6 +31,9 @@ function initModels(sequelize, tcgModels) {
   users.hasMany(user_roles, { as: "user_roles", foreignKey: "userId"});
   collectionCards.belongsTo(tcgModels.card, { as: "card", foreignKey: "cardId"});
   tcgModels.card.hasMany(collectionCards, { as: "collectionCards", foreignKey: "cardId"});
+
+  collections.belongsTo(users, { as: "creator", foreignKey: "creatorId"});
+  // users.hasMany(collections, { as: "collections", foreignKey: "id"});
 
   return {
     collectionCards,

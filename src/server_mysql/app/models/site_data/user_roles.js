@@ -2,7 +2,7 @@ const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('user_roles', {
     roleId: {
-      type: DataTypes.INTEGER,
+      type: Sequelize.UUID,
       allowNull: false,
       primaryKey: true,
       references: {
@@ -11,7 +11,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     userId: {
-      type: DataTypes.INTEGER,
+      type: Sequelize.UUID,
       allowNull: false,
       primaryKey: true,
       references: {
