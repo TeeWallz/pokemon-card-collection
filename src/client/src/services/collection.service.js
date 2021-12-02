@@ -5,11 +5,11 @@ const API_URL = 'http://localhost:8080/api/collection/';
 
 class CollectionService {
     getAll() {
-        return axios.get(API_URL + 'all');
+        return axios.get(API_URL);
     }
 
-    getOne() {
-        return axios.get(API_URL + 'user', { headers: authHeader() });
+    getOneDetail(id) {
+        return axios.get(API_URL + id);
 
 
         // return axios
@@ -25,6 +25,18 @@ class CollectionService {
 
     getUserBoard() {
         return axios.get(API_URL + 'user', { headers: authHeader() });
+    }
+
+    putCollection(id, collection) {
+        return axios
+            .put(API_URL + id,  collection)
+            .then((response) => {
+                alert("Done!")
+            })
+            .catch((err) => {
+                console.log(err);
+            })
+            ;
     }
 }
 

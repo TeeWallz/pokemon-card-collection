@@ -15,10 +15,10 @@ const {users: User,
 const collectionUtils = require("../middleware/collectionUtils")
 
 exports.getAll = (req, res) => {
-    const users = Collection.findAll()
+    Collection.findAll()
         .then(collections => {
             const response = JSON.stringify(collections, null, 2)
-            res.status(200).send(response);
+            res.send(response);
         })
         .catch(err => {
             res.status(500).send({message: err.message});
@@ -28,7 +28,16 @@ exports.getAll = (req, res) => {
 exports.getOne = (req, res) => {
     collectionUtils.getCollectionDetail({id: req.params.collectionId})
         .then((collection) => {
-            res.send(collection);
+            if (collection.length === 1){
+                res.send(collection[0]);
+            }
+            else{
+                res.status(404).send({});
+            }
+
+        })
+        .catch((err) => {
+            res.status(500).send(err.message);
         })
 
 };
@@ -61,47 +70,50 @@ exports.createCollection = (req, res) => {
         });
 };
 
-exports.updateCollection = (req, res) => {
-    // const utils = require("../middleware/utils");
+// PUT operation is idempotent. This means we will make a clean slate (i.e.e delete cards) and insert what's in our query.
+//    A PATCH would be an upsert
+async function putCollectionRollback(req, res) {
+    const collection = await Collection.findOne({ where: {id: req.params.collectionId} })
 
-    Collection.findOne({
-        where: {id: req.params.collectionId}
-    })
-        .then(collection => {
-            let promisesToDo = []
+    // Open a transaction as we are deleting before reinserting, allowing a rollback
+    const transaction = await db.sequelize.transaction();
 
-            if('name' in req.body) {
-                promisesToDo.push(
-                    collection.update({
-                        name: req.body.name
-                    })
-                )
-            }
+    try {
+        // Update name is present
+        if ('name' in req.body) {
+            await collection.update(
+                { name: req.body.name },
+                {transaction: transaction});
+        }
 
-            if('cards' in req.body) {
-                const cards = req.body.cards.map(v => ({...v, collectionId: collection.id}))
-                promisesToDo.push(
-                    CollectionCard.bulkCreate(cards,
-                        {
-                            fields: ["cardId", "collectionId", "count"],
-                            updateOnDuplicate: ["count"]
-                        })
-                )
-            }
+        // Clear and write cards if present
+        if ('cards' in req.body) {
+            // Add collection ID into input parameters
+            const cards = req.body.cards.map(v => ({...v, collectionId: collection.id}))
 
+            // Delete current state
+            await CollectionCard.destroy(
+                {where: {collectionId: req.params.collectionId},
+                transaction: transaction
+            })
 
-            Promise.all(promisesToDo).then((values) => {
-                res.send({message: "OK!"});
-            });
+            //Insert current status
+            await CollectionCard.bulkCreate(cards,
+                {
+                    fields: ["cardId", "collectionId", "count"],
+                    updateOnDuplicate: ["count"],
+                    transaction: transaction
+                });
+        }
+        await transaction.commit();
+        collectionUtils.returnCollectionDetail(res, {id:collection.id})
 
-
-
-        })
-        .catch(err => {
-            res.status(500).send({message: err.message});
-        });
-
-
+    }
+    catch(err){
+        await transaction.rollback();
+        console.log(err.message);
+        res.status(500).send({message: err.message});
+    }
 
 };
-
+exports.putCollectionRollback = putCollectionRollback;

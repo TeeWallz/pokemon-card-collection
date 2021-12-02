@@ -186,7 +186,7 @@ function initModels(sequelize) {
   rarity.hasMany(deck_card, { as: "deck_cards", foreignKey: "rarity"});
   set.belongsTo(series, { as: "series_sery", foreignKey: "series"});
   series.hasMany(set, { as: "sets", foreignKey: "series"});
-  card.belongsTo(set, { as: "set_set", foreignKey: "set"});
+  card.belongsTo(set, { as: "cardSet", foreignKey: "set"});
   set.hasMany(card, { as: "cards", foreignKey: "set"});
   deck.belongsTo(set, { as: "set_set", foreignKey: "set"});
   set.hasMany(deck, { as: "decks", foreignKey: "set"});

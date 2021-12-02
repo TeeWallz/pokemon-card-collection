@@ -6,13 +6,6 @@ import CollectionService from "../services/collection.service";
 import Button from 'react-bootstrap/Button';
 import Table from "react-bootstrap/Table";
 
-
-
-function HandleClick(path) {
-    const navigation = useNavigate();
-    navigation.push(path);
-}
-
 class BoardCollections extends Component {
     constructor(props) {
         super(props);
@@ -59,18 +52,23 @@ class BoardCollections extends Component {
                     <tr>
                         <th>Name</th>
                         <th>Owner</th>
-                        <th>Status</th>
+                        <th>Collected</th>
+                        <th>Goal</th>
+                        <th>Completion Status</th>
                     </tr>
                     </thead>
                     <tbody>
 
                     {this.state.collections.map(function (collection, i) {
                         // console.log(collection);
+
                         return (
-                            <tr key={i}>
+                            <tr key={i} onClick={()=>window.location = '/collection/' + collection.id}>
                                 <td>{collection.name}</td>
-                                <td>{collection.creatorId}</td>
-                                <td>10%</td>
+                                <td>{collection.creator.username}</td>
+                                <td>{collection.collectedCardsUnique}</td>
+                                <td>{collection.totalCards}</td>
+                                <td>{collection.status}</td>
                             </tr>
                         )
                     })}

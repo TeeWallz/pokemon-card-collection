@@ -35,7 +35,7 @@ module.exports = function(sequelize, DataTypes) {
     doNotSync: true,
     schema: 'tcg_data',
     tableName:     'set',
-    timestamps: true,
+    timestamps: false,
     indexes: [
       {
         name: "PRIMARY",

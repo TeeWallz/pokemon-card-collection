@@ -161,9 +161,8 @@ class App extends Component {
                 <Route path="/mod" element={<BoardModerator/>} />
                 <Route path="/admin" element={<BoardAdmin/>} />
 
-                <Route path="/collection" element={<BoardCollections/>}>
-                  <Route path="/collection/create" element={<CreateCollection/>} />
-                </Route>
+                <Route path="/collections" element={<BoardCollections/>} />
+                <Route path="/collection/create" element={<CreateCollection/>} />
                 <Route path="/collection/:id" element={<CollectionViewWrapper/>} />
 
                 <Route path="*" element={<NotFound/>} />

@@ -39,16 +39,13 @@ module.exports = function(sequelize, DataTypes) {
       {
         unique: true,
         using: "BTREE",
-        fields: [
-          { name: "cardId" },
-          { name: "collectionId" },
-        ]
+        fields: ["cardId", "collectionId"]
       },
       {
         name: "collectionId",
         using: "BTREE",
         fields: [
-          { name: "collectionId" },
+          "collectionId"
         ]
       },
     ]

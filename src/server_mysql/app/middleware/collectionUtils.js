@@ -7,20 +7,28 @@ const {users: User,
     collections: Collection,
     refreshTokens: RefreshToken,
     card: Card,
-    collectionCards: CollectionCard
+    collectionCards: CollectionCard,
+    set: tcgSet,
+    set_localisation: SetLocalisation,
+    card_localisation: CardLocalisation,
 } = db;
 
 const getCollectionSummary = (filter) => {
     // Return collection promise
     return new Promise((resolve, reject) => {
+        let status_query =  'CONCAT((CASE WHEN totalCards > 0 THEN ((totalCards/collectedCardsUnique) * 100) ELSE 0 END)::varchar(255), \'%\')';
+        status_query = status_query.replaceAll('totalCards', 'COUNT("collectionCards"."cardId")');
+        status_query = status_query.replaceAll('collectedCardsUnique', 'COUNT("collectionCards_alias2"."cardId")');
+
         Collection.findAll({
             where: filter,
-            group: ['collections.id'],
+            group: ['collections.id', 'creator.id'],
             attributes: [
                 'id',
                 'name',
                 [db.sequelize.fn('COUNT', db.sequelize.col('collectionCards.cardId')), 'totalCards'],
                 [db.sequelize.fn('COUNT', db.sequelize.col('collectionCards_alias2.cardId')), 'collectedCardsUnique'],
+                [db.sequelize.literal(status_query), 'status'],
                 // [db.sequelize.fn('SUM', db.sequelize.col('ReceiptPayments.receivedPayment')), 'totalPayment']
             ],
             include: [
@@ -45,6 +53,12 @@ const getCollectionSummary = (filter) => {
                     as: 'collectionCards_alias2',
                     where: { count : {[Op.gt]: 0,}}
                 },
+                {
+                    model: User,
+                    required: true,
+                    as: 'creator',
+                    attributes: ['id', 'username']
+                }
 
             ]
         })
@@ -59,6 +73,24 @@ const getCollectionSummary = (filter) => {
     });
 
 };
+const returnCollectionSummary = (res, filter) => {
+    // Return collection promise
+    getCollectionSummary(filter)
+        .then(collection => {
+            if(collection === null){
+                res.status(404).send({});
+            }
+            else{
+                const response = JSON.stringify(collection, {}, 2)
+                res.status(200).send(response);
+            }
+        })
+        .catch(err => {
+            console.log(err)
+            res.status(500).send({message: err.message});
+        });
+};
+
 
 const getCollectionDetail = (filter) => {
     // Return collection promise
@@ -71,6 +103,32 @@ const getCollectionDetail = (filter) => {
                     model: CollectionCard,
                     required: false,
                     as: 'collectionCards',
+                    include: [
+                        {
+                            model: Card,
+                            required: true,
+                            as: 'card',
+                            include: [
+                                {
+                                    model: tcgSet,
+                                    required: true,
+                                    as: 'cardSet',
+                                    include: [
+                                        {
+                                            model: SetLocalisation,
+                                            required: true,
+                                            as: 'set_localisations',
+                                        }
+                                    ]
+                                },
+                                {
+                                    model: CardLocalisation,
+                                    required: true,
+                                    as: 'card_localisations',
+                                }
+                            ]
+                        }
+                    ]
                 },{
                     model: User,
                     required: true,
@@ -93,30 +151,26 @@ const getCollectionDetail = (filter) => {
     });
 
 };
+const returnCollectionDetail = (res, filter) => {
+    getCollectionDetail(filter)
+        .then((collection) => {
+            if (collection.length === 1) {
+                res.send(collection[0]);
+            } else {
+                res.status(404).send({});
+            }
 
-const returnCollectionSummary = (res, filter) => {
-    // Return collection promise
-    getCollectionSummary(filter)
-    .then(collection => {
-        if(collection === null){
-            res.status(404).send({});
-        }
-        else{
-            const response = JSON.stringify(collection, {}, 2)
-            res.status(200).send(response);
-        }
-    })
-        .catch(err => {
-            console.log(err)
-            res.status(500).send({message: err.message});
-        });
-};
+        })
+}
+
+
 
 
 const things = {
     getCollectionSummary: getCollectionSummary,
-    getCollectionDetail: getCollectionDetail,
     returnCollectionSummary: returnCollectionSummary,
+    getCollectionDetail: getCollectionDetail,
+    returnCollectionDetail: returnCollectionDetail,
 };
 
 module.exports = things;

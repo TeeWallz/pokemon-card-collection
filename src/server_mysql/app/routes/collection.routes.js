@@ -28,10 +28,15 @@ module.exports = function(app) {
         controller.getFilter
     );
 
-    app.put(
-        "/api/collection/:collectionId",
-        controller.updateCollection
-    );
+    // app.put(
+    //     "/api/collection/:collectionId",
+    //     controller.putCollection
+    // );
+
+    app.put("/api/collection/:collectionId", async (req, res) => {
+        let ass = req.params.collectionId;
+        controller.putCollectionRollback(req, res)
+    })
 
     //
     // app.get(
