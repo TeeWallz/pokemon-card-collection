@@ -1,6 +1,7 @@
 import axios from 'axios';
 import authHeader from './auth-header';
 
+const API_BASE_URL = 'http://localhost:8080/api/';
 const API_URL = 'http://localhost:8080/api/collection/';
 
 class CollectionService {
@@ -37,6 +38,12 @@ class CollectionService {
                 console.log(err);
             })
             ;
+    }
+
+    getTcgApiQuery(query){
+        return axios.get(API_BASE_URL + 'tcgApiQuery',
+            { params: {query:query }}
+            );
     }
 }
 

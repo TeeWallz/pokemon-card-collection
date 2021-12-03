@@ -38,6 +38,12 @@ module.exports = function(app) {
         controller.putCollectionRollback(req, res)
     })
 
+    app.get(
+        "/api/tcgApiQuery",
+        controller.getFromTcgApiFilter
+    );
+
+
     //
     // app.get(
     //     "/api/test/mod",

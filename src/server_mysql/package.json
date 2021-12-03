@@ -17,6 +17,7 @@
     "mysql2": "^2.3.3",
     "pg": "^8.7.1",
     "pg-hstore": "^2.3.4",
+    "pokemontcgsdk": "^2.0.0",
     "sequelize": "^6.9.0",
     "sequelize-auto": "^0.8.5",
     "sqlite3": "^5.0.2"

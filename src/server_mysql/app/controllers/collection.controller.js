@@ -12,7 +12,10 @@ const {users: User,
     collectionCards: CollectionCard
 } = db;
 
-const collectionUtils = require("../middleware/collectionUtils")
+const collectionUtils = require("../middleware/collectionUtils");
+const pokemon = require('pokemontcgsdk');
+
+pokemon.configure({apiKey: '4440c304-d5c0-4939-b533-5befa084795c'})
 
 exports.getAll = (req, res) => {
     Collection.findAll()
@@ -117,3 +120,18 @@ async function putCollectionRollback(req, res) {
 
 };
 exports.putCollectionRollback = putCollectionRollback;
+
+
+exports.getFromTcgApiFilter = (req, res) => {
+    const query = req.query.query;
+
+    console.log("Loading from API")
+    pokemon.card.all({ q: query })
+        .then((cards) => {
+            console.log("Done!")
+            res.send(cards);
+        })
+        .catch((err) => {
+            res.status(500).send(err.message);
+        })
+};
