@@ -18,7 +18,7 @@ const pokemon = require('pokemontcgsdk');
 pokemon.configure({apiKey: '4440c304-d5c0-4939-b533-5befa084795c'})
 
 exports.getAll = (req, res) => {
-    Collection.findAll()
+    Collection.findAll({where:{isDeleted: false}})
         .then(collections => {
             const response = JSON.stringify(collections, null, 2)
             res.send(response);
@@ -31,8 +31,15 @@ exports.getAll = (req, res) => {
 exports.getOne = (req, res) => {
     collectionUtils.getCollectionDetail({id: req.params.collectionId})
         .then((collection) => {
-            if (collection.length === 1){
-                res.send(collection[0]);
+            var collection = (collection.length === 1) ? (collection[0].toJSON()) : {};
+
+            collection.collectionCards = collection.collectionCards.map((card) => {
+                card.fullCardNumber = card.card.number + "/" + card.card.cardSet.printedTotal
+                return card;
+            })
+
+            if ('id' in collection){
+                res.send(collection);
             }
             else{
                 res.status(404).send({});
@@ -46,7 +53,13 @@ exports.getOne = (req, res) => {
 };
 
 exports.getFilter = (req, res) => {
-    collectionUtils.returnCollectionSummary(res, req.params.filter)
+    let filter = {};
+    if(!(req.params.filter === undefined)){
+        filter = req.params.filter
+    }
+    filter.isDeleted = false;
+
+    collectionUtils.returnCollectionSummary(res, filter)
 };
 
 
@@ -54,18 +67,28 @@ exports.createCollection = (req, res) => {
     // const utils = require("../middleware/utils");
     // Check for missing parameters
     // Check for empty parameters
-    let cards = []
+    let cards = {}
     if('cards' in req.body){ cards = req.body.cards; }
 
     // Save Collection to Database
     Collection.create({
         name: req.body.name,
-        creatorId: req.user.id
+        creatorId: req.user.id,
+        isDeleted: false,
     })
         .then(collection => {
-            collection.setCards(cards)
+
+            cards = cards.map((card, index) => {
+                card.orderNumber = index;
+                card.cardId = card.id;
+                card.collectionId = collection.id;
+                return card;
+            })
+
+
+            CollectionCard.bulkCreate(cards)
                 .then(() => {
-                    collectionUtils.returnCollectionSummary(res, {id:collection.id})
+                    collectionUtils.returnCollectionDetail(res, {id:collection.id})
                 })
         })
         .catch(err => {
@@ -103,8 +126,8 @@ async function putCollectionRollback(req, res) {
             //Insert current status
             await CollectionCard.bulkCreate(cards,
                 {
-                    fields: ["cardId", "collectionId", "count"],
-                    updateOnDuplicate: ["count"],
+                    fields: ["cardId", "collectionId", "count", "orderNumber"],
+                    updateOnDuplicate: ["count", "orderNumber"],
                     transaction: transaction
                 });
         }
@@ -125,11 +148,27 @@ exports.putCollectionRollback = putCollectionRollback;
 exports.getFromTcgApiFilter = (req, res) => {
     const query = req.query.query;
 
-    console.log("Loading from API")
+    if(query == null || query === ""){
+        res.status(500).send({message:"Empty Query"});
+        return;
+    }
+
+    console.log("Loading from API. Query: " + query)
     pokemon.card.all({ q: query })
         .then((cards) => {
             console.log("Done!")
-            res.send(cards);
+
+            // Rollup nested fields for tables that suck at nested values
+            let cards_enriched = cards.map((card) => {
+                card.setReleaseDate = card.set.releaseDate;
+                card.fullCardNumber = card.number + "/" + card.set.printedTotal;
+                return card;
+            })
+
+            // Sort by releaseDate by default
+            cards_enriched = cards_enriched.sort((a, b) => (a.setReleaseDate > b.setReleaseDate ? 1 : -1));
+
+            res.send(cards_enriched);
         })
         .catch((err) => {
             res.status(500).send(err.message);

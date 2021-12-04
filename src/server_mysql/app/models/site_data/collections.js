@@ -19,6 +19,17 @@ module.exports = function(sequelize, DataTypes) {
         key: 'id'
       }
     },
+    isDeleted: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    filter: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+
+
   }, {
     sequelize,
     schema: 'site_data',

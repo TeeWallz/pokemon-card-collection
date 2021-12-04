@@ -5,6 +5,10 @@ import {Link, useNavigate} from "react-router-dom";
 import CollectionService from "../services/collection.service";
 import Button from 'react-bootstrap/Button';
 import Table from "react-bootstrap/Table";
+import {BootstrapTable, TableHeaderColumn} from "react-bootstrap-table";
+import Col from "react-bootstrap/Col";
+import "bootstrap-icons/font/bootstrap-icons.css";
+
 
 class BoardCollections extends Component {
     constructor(props) {
@@ -13,6 +17,11 @@ class BoardCollections extends Component {
         this.state = {
             collections: []
         };
+
+        // this.openFormatter = this.openFormatter.bind(this);
+        this.optionFormatter = this.optionFormatter.bind(this);
+        this.onDeleteClick = this.onDeleteClick.bind(this);
+        this.onRowClick = this.onRowClick.bind(this);
     }
 
     componentDidMount() {
@@ -39,45 +48,54 @@ class BoardCollections extends Component {
 
     }
 
-    render() {
+    onRowClick(e, row, rowIndex){
+        console.log((e, row, rowIndex))
+    }
 
-
-
-        let collectionList = "Ain't Nobody Here But Us Chickens";
-
-        if(this.state.collections.length > 0){
-            collectionList = (
-                <Table striped bordered hover>
-                    <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Owner</th>
-                        <th>Collected</th>
-                        <th>Goal</th>
-                        <th>Completion Status</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-
-                    {this.state.collections.map(function (collection, i) {
-                        // console.log(collection);
-
-                        return (
-                            <tr key={i} onClick={()=>window.location = '/collection/' + collection.id}>
-                                <td>{collection.name}</td>
-                                <td>{collection.creator.username}</td>
-                                <td>{collection.collectedCardsUnique}</td>
-                                <td>{collection.totalCards}</td>
-                                <td>{collection.status}</td>
-                            </tr>
-                        )
-                    })}
-
-                    </tbody>
-                </Table>
-            )
+    onDeleteClick(e){
+        if (window.confirm('Are you sure you want to delete? ' + e.currentTarget.id)) {
+            // Save it!
+            console.log('Thing was saved to the database.');
+        } else {
+            // Do nothing!
+            console.log('Thing was not saved to the database.');
         }
 
+    }
+
+    onOpenClick(e){
+        const link = "/collection/" +  e.currentTarget.id;
+        window.open(link, "_blank")
+    }
+
+    optionFormatter(e){
+        const result = (
+            <span>
+                <span id={e} style={{cursor: 'pointer'}} onClick={(e) => {
+                    this.onOpenClick(e)
+                }}><i className="bi bi-box-arrow-up-right"></i></span>
+
+                &nbsp;
+                &nbsp;
+                <span id={e} style={{cursor: 'pointer'}} onClick={(e) => {
+                    this.onDeleteClick(e)
+                }}><i className="bi bi-trash"></i></span>
+            </span>
+
+        )
+        return result;
+    }
+
+    render() {
+        if(this.state.collections.length > 1){
+            console.log(this.state.collections[0]);
+        }
+
+        const rowEvents = {
+            onClick: (e, row, rowIndex) => {
+                console.log(row);
+            }
+        };
 
         return (
             <div className="container">
@@ -86,7 +104,23 @@ class BoardCollections extends Component {
                     <h1>All Collections</h1>
                     <Link to="/collection/create" className="btn btn-primary">Create Collection</Link>
                     <div>
-                        {collectionList}
+                        {/*{collectionList}*/}
+
+                        <BootstrapTable data={this.state.collections}
+                                        striped={true}
+                                        hover={true}
+                                        rowEvents={rowEvents}
+                        >
+                            <TableHeaderColumn dataField="name" isKey={true} dataAlign="center" dataSort={true}>Name</TableHeaderColumn>
+                            <TableHeaderColumn dataField="collectedCardsUnique" dataSort={true}>collectedCardsUnique</TableHeaderColumn>
+                            <TableHeaderColumn dataField="totalCards" dataSort={true}>totalCards</TableHeaderColumn>
+                            <TableHeaderColumn dataField="status" dataSort={true}>status</TableHeaderColumn>
+                            <TableHeaderColumn dataField="filter" dataSort={true}>filter</TableHeaderColumn>
+                            {/*<TableHeaderColumn width={"3em"} dataField="id" dataSort={true} dataFormat={this.openFormatter}></TableHeaderColumn>*/}
+                            <TableHeaderColumn width={"4em"} dataField="id" dataSort={true} dataFormat={this.optionFormatter}></TableHeaderColumn>
+                            {/*<TableHeaderColumn dataField="price" dataFormat={priceFormatter}>Product Price</TableHeaderColumn>*/}
+                        </BootstrapTable>
+
                     </div>
                 </header>
             </div>

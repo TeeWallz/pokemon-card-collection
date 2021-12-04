@@ -2,7 +2,7 @@ import axios from 'axios';
 import authHeader from './auth-header';
 
 const API_BASE_URL = 'http://localhost:8080/api/';
-const API_URL = 'http://localhost:8080/api/collection/';
+const API_URL = 'http://localhost:8080/api/collection';
 
 class CollectionService {
     getAll() {
@@ -10,7 +10,7 @@ class CollectionService {
     }
 
     getOneDetail(id) {
-        return axios.get(API_URL + id);
+        return axios.get(API_URL + "/" + id);
 
 
         // return axios
@@ -24,13 +24,18 @@ class CollectionService {
         //     });
     }
 
-    getUserBoard() {
-        return axios.get(API_URL + 'user', { headers: authHeader() });
+    postCollection(collection) {
+        let headers = authHeader();
+        headers.yeet = 'ass';
+
+        return axios
+            .post(API_BASE_URL + 'collection', collection, {headers: headers})
+            ;
     }
 
     putCollection(id, collection) {
         return axios
-            .put(API_URL + id,  collection)
+            .put(API_URL + "/" + id,  collection)
             .then((response) => {
                 alert("Done!")
             })

@@ -16,7 +16,7 @@ const {users: User,
 const getCollectionSummary = (filter) => {
     // Return collection promise
     return new Promise((resolve, reject) => {
-        let status_query =  'CONCAT((CASE WHEN totalCards > 0 THEN ((totalCards/collectedCardsUnique) * 100) ELSE 0 END)::varchar(255), \'%\')';
+        let status_query =  'CONCAT((CASE WHEN totalCards > 0 THEN ((collectedCardsUnique/totalCards) * 100) ELSE 0 END)::varchar(255), \'%\')';
         status_query = status_query.replaceAll('totalCards', 'COUNT("collectionCards"."cardId")');
         status_query = status_query.replaceAll('collectedCardsUnique', 'COUNT("collectionCards_alias2"."cardId")');
 
@@ -26,6 +26,7 @@ const getCollectionSummary = (filter) => {
             attributes: [
                 'id',
                 'name',
+                'filter',
                 [db.sequelize.fn('COUNT', db.sequelize.col('collectionCards.cardId')), 'totalCards'],
                 [db.sequelize.fn('COUNT', db.sequelize.col('collectionCards_alias2.cardId')), 'collectedCardsUnique'],
                 [db.sequelize.literal(status_query), 'status'],
@@ -97,7 +98,10 @@ const getCollectionDetail = (filter) => {
     return new Promise((resolve, reject) => {
         Collection.findAll({
             where: filter,
-
+            // order: [ //
+            //     'orderNumber', 'DESC'
+            // ],
+            order: db.Sequelize.literal('"collectionCards"."orderNumber" asc'),
             include: [
                 {
                     model: CollectionCard,
@@ -126,9 +130,25 @@ const getCollectionDetail = (filter) => {
                                     required: true,
                                     as: 'card_localisations',
                                 }
-                            ]
+                            ],
                         }
-                    ]
+                    ],
+                    attributes: [
+                        'cardId',
+                        'collectionId',
+                        'orderNumber',
+                        'count',
+                        [db.Sequelize.literal('"collectionCards->card->card_localisations"."name"'), 'name'],
+                        [db.Sequelize.literal('"collectionCards->card"."supertype"'), 'supertype'],
+                        [db.Sequelize.literal('"collectionCards->card"."rarity"'), 'rarity'],
+                        [db.Sequelize.literal('"collectionCards->card->cardSet"."series"'), 'setSeries'],
+                        [db.Sequelize.literal('"collectionCards->card->cardSet"."printedTotal"'), 'setPrintedTotal'],
+                        [db.Sequelize.literal('"collectionCards->card->cardSet"."total"'), 'setTotal'],
+                        [db.Sequelize.literal('"collectionCards->card->cardSet"."releaseDate"'), 'setReleaseDate'],
+                        [db.Sequelize.literal('"collectionCards->card->cardSet->set_localisations"."name"'), 'setName'],
+                        // [db.Sequelize.literal('"cardSet"."printedTotal"'), 'setPrintedTotal'],
+                    ],
+
                 },{
                     model: User,
                     required: true,
@@ -141,7 +161,7 @@ const getCollectionDetail = (filter) => {
 
         })
             .then(collection => {
-                resolve(collection);-A
+                resolve(collection);
             })
 
 

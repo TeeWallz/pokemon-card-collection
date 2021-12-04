@@ -8,8 +8,20 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Table from "react-bootstrap/Table";
+import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 
 import pokemon from 'pokemontcgsdk'
+
+
+
+function showDescription(cell, row) {
+    return cell.description;
+}
+
+function priceFormatter(cell, row){
+    return '<i class="glyphicon glyphicon-usd"></i> ' + cell;
+}
+
 
 class CollectionsCreate extends Component {
     constructor(props) {
@@ -17,10 +29,13 @@ class CollectionsCreate extends Component {
 
         this.searchTcgApiCard = this.searchTcgApiCard.bind(this);
         this.changeSearchTerm = this.changeSearchTerm.bind(this);
+        this.changeCollectionName = this.changeCollectionName.bind(this);
+        this.saveCollection = this.saveCollection.bind(this);
 
         this.state = {
             searchCards: [],
             searchTerm: 'name:blastoise',
+            collectionName: '',
         };
     }
 
@@ -33,62 +48,66 @@ class CollectionsCreate extends Component {
             console.log(this.state)
         })
     }
+    changeCollectionName(e) {
+        this.setState({ collectionName: e.target.value }, () =>  {
+            console.log(this.state)
+        })
+    }
+
+
 
     searchTcgApiCard(query){
         CollectionService.getTcgApiQuery(this.state.searchTerm)
             .then((cards) => {
+                let cards_enriched = cards.data;
+
+
+
                 this.setState({searchCards: cards.data}, () =>  {
                     console.log(this.state)
                 })
             })
+    }
+
+    saveCollection(){
+        if(this.state.collectionName === ""){
+            alert("CollectionName empty. Stopping save.");
+            return;
+        }
+        if(this.state.searchCards.length === 0){
+            alert("No cards to save. Stopping save.");
+            return;
+        }
+
+        const { searchCards } = { ...this.state };
+        const currentSearchCards = JSON.parse(JSON.stringify(searchCards));
+
+        let collectionToSubmit = {"name": this.state.collectionName, "cards": []};
+
+        for (let obj of currentSearchCards) {
+            collectionToSubmit.cards.push({id: obj.id, count: 0 })
+        }
+
+
+
+        CollectionService.postCollection(collectionToSubmit)            .then((response) => {
+            alert("Done!")
+            window.location = "/collection/" + response.data.id;
+        })
+            .catch((err) => {
+                alert(err);
+            })
+
 
     }
 
+
+
     render() {
-        const collectionList = (
-            <Table striped bordered hover>
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Card No</th>
-                    <th>Name</th>
-                    <th>Supertype</th>
-                    <th>Set</th>
-                    <th>Release Date</th>
-                    <th>Rarity</th>
-                </tr>
-                </thead>
-                <tbody>
-                {this.state.searchCards.length ? (
+        let collectionList = []
 
-                    this.state.searchCards.map(function (card, i) {
-                        // debugger;
 
-                        return (
-                            <tr key={i} >
-                                <td>{card.id}</td>
-                                <td>{card.number + "/" + card.set.printedTotal}</td>
-                                <td>{card.name}</td>
-                                <td>{card.supertype}</td>
-                                <td>{card.set.name}</td>
-                                <td>{card.set.releaseDate}</td>
-                                <td>{card.rarity}</td>
-                            </tr>
-                        )
-                    })
-                ) : (
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                )}
 
-                </tbody>
-            </Table>
-        )
 
         return (
             <div className="container">
@@ -103,6 +122,24 @@ class CollectionsCreate extends Component {
                     </Container>
                 </header>
                 <section style={{marginTop: '20px'}}>
+
+                    <Container>
+                        <Row className="justify-content-md-center">
+                            <Col xs lg="5">
+                                <Form.Label>Name</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Collection Name"
+                                    value={this.state.collectionName}
+                                    onChange={this.changeCollectionName}
+                                />
+                            </Col>
+                        </Row>
+                    </Container>
+
+
+
+
                     <Container>
                         <Row className="justify-content-md-center">
                             <Col xs lg="5">
@@ -124,8 +161,25 @@ class CollectionsCreate extends Component {
                 <section style={{marginTop: '20px'}}>
                     <Container>
                         <Row className="justify-content-md-center">
-                            <Col xs lg="8">
-                                {collectionList}
+                            <Col xs={"12"} >
+                                <Button className={"float-right"} variant="primary" type="submit" onClick={this.saveCollection}>
+                                    Save
+                                </Button>
+                            </Col>
+                            <Col xs lg="12">
+                                {/*{collectionList}*/}
+                                <div>
+                                    {this.state.searchCards.length} Cards
+                                </div>
+                                <BootstrapTable data={this.state.searchCards} striped={true} hover={true}>
+                                    <TableHeaderColumn dataField="id" isKey={true} dataAlign="center" dataSort={true}>ID</TableHeaderColumn>
+                                    <TableHeaderColumn dataField="name" dataSort={true}>Card No</TableHeaderColumn>
+                                    <TableHeaderColumn dataField="fullCardNumber" dataSort={true}>fullCardNumber</TableHeaderColumn>
+                                    <TableHeaderColumn dataField="supertype" dataSort={true}>Supertype</TableHeaderColumn>
+                                    <TableHeaderColumn dataField="setReleaseDate" dataSort={true}>Release Date</TableHeaderColumn>
+                                    <TableHeaderColumn dataField="rarity" dataSort={true}>Rarity</TableHeaderColumn>
+                                    {/*<TableHeaderColumn dataField="price" dataFormat={priceFormatter}>Product Price</TableHeaderColumn>*/}
+                                </BootstrapTable>
                             </Col>
                         </Row>
                     </Container>

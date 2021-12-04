@@ -6,8 +6,10 @@ import CollectionService from "../services/collection.service";
 import Button from 'react-bootstrap/Button';
 import Table from "react-bootstrap/Table";
 import ToggleButton from "react-bootstrap/ToggleButton";
-import { ArrowRight } from 'react-bootstrap-icons';
+import {ArrowRight, CaretDownSquare} from 'react-bootstrap-icons';
 import "bootstrap-icons/font/bootstrap-icons.css";
+import {BootstrapTable, TableHeaderColumn} from "react-bootstrap-table";
+import Col from "react-bootstrap/Col";
 
 
 class CollectionView extends Component {
@@ -15,9 +17,10 @@ class CollectionView extends Component {
         super(props);
         this.handleCardCollectedCheckboxClick = this.handleCardCollectedCheckboxClick.bind(this);
         this.handleSaveCollectionButtonClick = this.handleSaveCollectionButtonClick.bind(this);
+        this.cardCollectedToggle = this.cardCollectedToggle.bind(this);
 
         this.state = {
-            collection: {},
+            collection: {collectionCards:[]},
             collectionId: this.props.id,
         };
     }
@@ -80,63 +83,30 @@ class CollectionView extends Component {
         CollectionService.putCollection( this.state.collectionId, collectionToSubmit)
     }
 
+    cardCollectedToggle(cell, row, enumObject) {
+        console.log(">", cell, row, enumObject);
+        // return 1;
+        return (
+            <ToggleButton
+                className="mb-2"
+                id={row.card.cardId}
+                type="checkbox"
+                variant="outline-primary"
+                checked={row.card.count}
+                value={row.card.count}
+                // onChange={this.handleCardCollectedCheckboxClick}
+            >
+                {/*{(card.count) ? <i className="bi bi-check-circle-fill"></i> : <i class="bi bi-circle"></i>}*/}
+                {(row.card.count) ? <i className="bi bi-check2-circle"></i> : <i className="bi bi-circle"></i>}
+            </ToggleButton>
+        )
+    }
+
 
     render() {
         console.log(this.state.collection);
-        let CollectionList = "No Cards in collection";
-        if(this?.state?.collection?.collectionCards?.length > 0 ){
-
-            // debugger;
-            CollectionList = (
-                <Table striped bordered hover>
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Rarity</th>
-                        <th>Collected</th>
-                        <th>Completion Status</th>
-                    </tr>
-                    </thead>
-                    <tbody>
 
 
-
-                    {this?.state?.collection?.collectionCards?.map((card, i) => {
-                        console.log(this?.add && this.add);
-                        // debugger;
-
-                        return (
-                            <tr key={i}
-                                // onClick={()=>window.location = '/collection/' + collection.id}
-                            >
-                                <td>{card.cardId}</td>
-                                <td>{card.card.card_localisations[0].name}</td>
-                                <td>{card.card.rarity}</td>
-                                {/*<td>{card.count}</td>*/}
-                                <td>
-                                    <ToggleButton
-                                        className="mb-2"
-                                        id={card.cardId}
-                                        type="checkbox"
-                                        variant="outline-primary"
-                                        checked={card.count}
-                                        value={card.count}
-                                        onChange={this.handleCardCollectedCheckboxClick}
-                                    >
-                                        {/*{(card.count) ? <i className="bi bi-check-circle-fill"></i> : <i class="bi bi-circle"></i>}*/}
-                                        {(card.count) ? <i className="bi bi-check2-circle"></i> : <i class="bi bi-circle"></i>}
-                                    </ToggleButton>
-                                </td>
-                                <td>{card.cardId}</td>
-                            </tr>
-                        )
-                    })}
-
-                    </tbody>
-                </Table>
-            )
-        }
 
         return (
             <div className="container">
@@ -144,10 +114,20 @@ class CollectionView extends Component {
                     {/*<h3>{this.state.content}</h3>*/}
                     <h1>Collection - {this.state.collectionId}</h1>
                 </header>
-                <div>
-                    {CollectionList}
-                </div>
                 <Button onClick={this.handleSaveCollectionButtonClick} >Save Collection</Button>
+                <div>
+
+
+                    <BootstrapTable data={this.state.collection?.collectionCards} striped={true} hover={true}>
+                        <TableHeaderColumn dataField="orderNumber" dataAlign="center" dataSort={true}>orderNumber</TableHeaderColumn>
+                        <TableHeaderColumn dataField="cardId" isKey={true} dataAlign="center" dataSort={true}>cardId</TableHeaderColumn>
+                        <TableHeaderColumn dataField="name" dataSort={true}>name</TableHeaderColumn>
+                        <TableHeaderColumn dataField="rarity" dataSort={true}>rarity</TableHeaderColumn>
+                        <TableHeaderColumn dataField="Collected" dataSort={true} dataFormat={this.cardCollectedToggle}>Collected</TableHeaderColumn>
+                        <TableHeaderColumn dataField="setReleaseDate" dataSort={true}>Release Date</TableHeaderColumn>
+                        {/*<TableHeaderColumn dataField="price" dataFormat={cardCollectedToggle}>Product Price</TableHeaderColumn>*/}
+                    </BootstrapTable>
+                </div>
             </div>
         );
     }
@@ -162,3 +142,8 @@ function mapStateToProps(state) {
 
 
 export default connect(mapStateToProps)(CollectionView);
+
+
+// TODO ADD BOOTSTRAPTABLE INTO COLLECTION VIEW TO ORDERNUM AND DATE CAN BE SORTED
+// ALSO DO "START COLLECTION" SCREEB TO SHOW ALL CaretDownSquare
+// ADD TYPING FILTER?
