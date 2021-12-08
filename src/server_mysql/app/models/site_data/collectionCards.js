@@ -28,6 +28,12 @@ module.exports = function(sequelize, DataTypes) {
       references: {
         model: 'collections',
         key: 'id'
+      },
+      collection_card_key: {
+        type: 'VARCHAR(100) GENERATED ALWAYS AS ( case when "collectionId" is null then \'268ffa44-26b7-4fdc-9d6c-29d3530ede3c\' else "collectionId"::text end || \'/\' || case when "cardId" is null then \'0\' else "cardId" end ) STORED',
+        set() {
+          throw new Error('generatedValue is read-only')
+        },
       }
     }
   }, {

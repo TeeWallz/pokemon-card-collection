@@ -28,6 +28,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(255),
       allowNull: true
     },
+    binderCardsPerPage: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 9,
+    },
 
 
   }, {

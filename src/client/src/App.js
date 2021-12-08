@@ -23,7 +23,7 @@ import { clearMessage } from "./actions/message";
 import { history } from './helpers/history';
 import AuthVerify from "./common/auth-verify";
 import NotFound from "./components/NotFound";
-import CollectiomViewWrapper from "./components/collection-view.function";
+import CollectionViewEpic from "./components/collection-view-epic-component";
 import CollectionViewWrapper from "./components/collection-view.function";
 
 class App extends Component {
@@ -111,19 +111,26 @@ class App extends Component {
 
 
                 {currentUser && (
-                    <li className="nav-item">
-                      <Link to={"/user"} className="nav-link">
-                        User
-                      </Link>
-                    </li>
+                    <React.Fragment>
+                      <li className="nav-item">
+                        <Link to={"/epic"} className="nav-link">
+                          Epic
+                        </Link>
+                      </li>
+                    </React.Fragment>
                 )}
               </div>
 
               {currentUser ? (
-                  <div className="navbar-nav ml-auto">
+                  <div className="navbar-nav ml-auto" style={{marginLeft: 'auto'}}>
                     <li className="nav-item">
                       <Link to={"/profile"} className="nav-link">
                         {currentUser.username}
+                      </Link>
+                    </li>
+                    <li className="nav-item">
+                      <Link to={"/user"} className="nav-link">
+                        User
                       </Link>
                     </li>
                     <li className="nav-item">
@@ -165,6 +172,7 @@ class App extends Component {
                 <Route path="/collection/create" element={<CreateCollection/>} />
                 <Route path="/collection/:id" element={<CollectionViewWrapper/>} />
 
+                <Route path="/epic" element={<CollectionViewEpic/>} />
                 <Route path="*" element={<NotFound/>} />
 
 

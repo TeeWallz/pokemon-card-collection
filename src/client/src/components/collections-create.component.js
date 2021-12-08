@@ -9,6 +9,7 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Table from "react-bootstrap/Table";
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
+import { Spinner } from 'react-bootstrap';
 
 import pokemon from 'pokemontcgsdk'
 
@@ -31,11 +32,16 @@ class CollectionsCreate extends Component {
         this.changeSearchTerm = this.changeSearchTerm.bind(this);
         this.changeCollectionName = this.changeCollectionName.bind(this);
         this.saveCollection = this.saveCollection.bind(this);
+        this.Speeeeeeen = this.Speeeeeeen.bind(this);
+        this.saveAndRedirectClick = this.saveAndRedirectClick.bind(this);
+        this.saveAndCreateAnotherClick = this.saveAndCreateAnotherClick.bind(this);
+
 
         this.state = {
             searchCards: [],
             searchTerm: 'name:blastoise',
             collectionName: '',
+            isLoading: false,
         };
     }
 
@@ -54,18 +60,61 @@ class CollectionsCreate extends Component {
         })
     }
 
+    Speeeeeeen(){
+        if(this.state.isLoading){
+            return (
+                <div style={{display: 'flex', alignContent: 'center', justifyContent: 'center'}}>
+                    <div style={{display:"inline-block"}}>
+                        <Spinner animation="border" role="status" >
+                            {/*<span className="sr-only">Loading.Weeeeeee</span>*/}
+                        </Spinner>
+                    </div>
+                </div >
+            );
+        }
+        else{
+            return "";
+        }
+    }
 
 
     searchTcgApiCard(query){
+        this.setState({isLoading: true})
         CollectionService.getTcgApiQuery(this.state.searchTerm)
             .then((cards) => {
                 let cards_enriched = cards.data;
 
 
 
-                this.setState({searchCards: cards.data}, () =>  {
+                this.setState({searchCards: cards.data, isLoading: false}, () =>  {
                     console.log(this.state)
                 })
+            })
+            .catch((ex) => {
+                alert("Error.");
+                this.setState({ isLoading: false}, () =>  {
+                    console.log(this.state)
+                })
+            })
+    }
+
+    saveAndRedirectClick(){
+        this.saveCollection()
+            .then((response) => {
+                window.location = "/collection/" + response.data.id;
+            })
+            .catch((err) => {
+                alert(err);
+            })
+    }
+
+    saveAndCreateAnotherClick(){
+        this.saveCollection()
+            .then((response) => {
+                window.location = "/collection/create";
+            })
+            .catch((err) => {
+                alert(err);
             })
     }
 
@@ -82,7 +131,11 @@ class CollectionsCreate extends Component {
         const { searchCards } = { ...this.state };
         const currentSearchCards = JSON.parse(JSON.stringify(searchCards));
 
-        let collectionToSubmit = {"name": this.state.collectionName, "cards": []};
+        let collectionToSubmit = {
+            name: this.state.collectionName,
+            filter: this.state.searchTerm,
+            cards: []
+        };
 
         for (let obj of currentSearchCards) {
             collectionToSubmit.cards.push({id: obj.id, count: 0 })
@@ -90,13 +143,7 @@ class CollectionsCreate extends Component {
 
 
 
-        CollectionService.postCollection(collectionToSubmit)            .then((response) => {
-            alert("Done!")
-            window.location = "/collection/" + response.data.id;
-        })
-            .catch((err) => {
-                alert(err);
-            })
+        return CollectionService.postCollection(collectionToSubmit)
 
 
     }
@@ -106,11 +153,12 @@ class CollectionsCreate extends Component {
     render() {
         let collectionList = []
 
-
+        const isLoadingClass = this.state.isLoading ? 'none' : 'none';
 
 
         return (
             <div className="container">
+
                 <header className="jumbotron">
                     <Container>
 
@@ -162,8 +210,13 @@ class CollectionsCreate extends Component {
                     <Container>
                         <Row className="justify-content-md-center">
                             <Col xs={"12"} >
-                                <Button className={"float-right"} variant="primary" type="submit" onClick={this.saveCollection}>
+                                {this.Speeeeeeen()}
+                                <Button className={"float-right"} variant="primary" type="submit" onClick={this.saveAndRedirectClick}>
                                     Save
+                                </Button>
+                                &nbsp;
+                                <Button className={"float-right"} variant="primary" type="submit" onClick={this.saveAndCreateAnotherClick}>
+                                    Save And create another
                                 </Button>
                             </Col>
                             <Col xs lg="12">
@@ -176,6 +229,7 @@ class CollectionsCreate extends Component {
                                     <TableHeaderColumn dataField="name" dataSort={true}>Card No</TableHeaderColumn>
                                     <TableHeaderColumn dataField="fullCardNumber" dataSort={true}>fullCardNumber</TableHeaderColumn>
                                     <TableHeaderColumn dataField="supertype" dataSort={true}>Supertype</TableHeaderColumn>
+                                    <TableHeaderColumn dataField="setName" dataSort={true}>setName</TableHeaderColumn>
                                     <TableHeaderColumn dataField="setReleaseDate" dataSort={true}>Release Date</TableHeaderColumn>
                                     <TableHeaderColumn dataField="rarity" dataSort={true}>Rarity</TableHeaderColumn>
                                     {/*<TableHeaderColumn dataField="price" dataFormat={priceFormatter}>Product Price</TableHeaderColumn>*/}

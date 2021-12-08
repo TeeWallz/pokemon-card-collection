@@ -2,6 +2,7 @@ module.exports = {
     HOST: "localhost",
     USER: "postgres",
     // PASSWORD: "root",
+    // DB: "pokemon-site",
     DB: "pokemon-site",
     SCHEMA: "",
     dialect: "postgres",

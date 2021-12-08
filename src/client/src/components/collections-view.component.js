@@ -47,14 +47,42 @@ class CollectionView extends Component {
         );
     }
 
+    cardCollectedToggle(cell, row, enumObject) {
+        // console.log(">", cell, row, enumObject);
+        // return 1;
+        // debugger;
+        console.log(row.cardId)
+        let ass =  (
+            <ToggleButton
+                className="my-0"
+                id={row.cardId}
+                type="checkbox"
+                variant="outline-primary"
+                checked={row.count}
+                value={row.count}
+                onClick={this.handleCardCollectedCheckboxClick}
+                data={row.cardId}
+                size="sm"
+            >
+                {/*{(card.count) ? <i className="bi bi-check-circle-fill"></i> : <i class="bi bi-circle"></i>}*/}
+                {(row.count) ? <i className="bi bi-check2-circle"></i> : <i className="bi bi-circle"></i>}
+            </ToggleButton>
+        )
+        // debugger;
+        return ass;
+    }
+
     handleCardCollectedCheckboxClick(e) {
         console.log(e.currentTarget.id);
+        // Why in the living fuck is this null, why does the toogle's ID not inherit correctly
+        // Do this bullshit instead
+        const id = e.currentTarget.htmlFor;
 
         const { collection } = { ...this.state };
         const currentState = collection;
 
         for (let card of collection.collectionCards) {
-            if(card.cardId === e.currentTarget.id){
+            if(card.cardId === id){
                 card.count = (card.count) ? 0 : 1;
                 break;
             }
@@ -63,6 +91,7 @@ class CollectionView extends Component {
 
         this.setState({ collection: currentState });
     }
+
 
     handleSaveCollectionButtonClick(e) {
         const { collection } = { ...this.state };
@@ -83,25 +112,6 @@ class CollectionView extends Component {
         CollectionService.putCollection( this.state.collectionId, collectionToSubmit)
     }
 
-    cardCollectedToggle(cell, row, enumObject) {
-        console.log(">", cell, row, enumObject);
-        // return 1;
-        return (
-            <ToggleButton
-                className="mb-2"
-                id={row.card.cardId}
-                type="checkbox"
-                variant="outline-primary"
-                checked={row.card.count}
-                value={row.card.count}
-                // onChange={this.handleCardCollectedCheckboxClick}
-            >
-                {/*{(card.count) ? <i className="bi bi-check-circle-fill"></i> : <i class="bi bi-circle"></i>}*/}
-                {(row.card.count) ? <i className="bi bi-check2-circle"></i> : <i className="bi bi-circle"></i>}
-            </ToggleButton>
-        )
-    }
-
 
     render() {
         console.log(this.state.collection);
@@ -112,7 +122,7 @@ class CollectionView extends Component {
             <div className="container">
                 <header className="jumbotron">
                     {/*<h3>{this.state.content}</h3>*/}
-                    <h1>Collection - {this.state.collectionId}</h1>
+                    <h1>Collection - {this.state.collection?.name}</h1>
                 </header>
                 <Button onClick={this.handleSaveCollectionButtonClick} >Save Collection</Button>
                 <div>
@@ -120,6 +130,8 @@ class CollectionView extends Component {
 
                     <BootstrapTable data={this.state.collection?.collectionCards} striped={true} hover={true}>
                         <TableHeaderColumn dataField="orderNumber" dataAlign="center" dataSort={true}>orderNumber</TableHeaderColumn>
+                        <TableHeaderColumn dataField="binderPageNo" dataAlign="center" dataSort={true}>binderPageNo</TableHeaderColumn>
+                        <TableHeaderColumn dataField="binderSlotNo" dataAlign="center" dataSort={true}>binderSlotNo</TableHeaderColumn>
                         <TableHeaderColumn dataField="cardId" isKey={true} dataAlign="center" dataSort={true}>cardId</TableHeaderColumn>
                         <TableHeaderColumn dataField="name" dataSort={true}>name</TableHeaderColumn>
                         <TableHeaderColumn dataField="rarity" dataSort={true}>rarity</TableHeaderColumn>

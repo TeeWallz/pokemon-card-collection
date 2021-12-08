@@ -19,12 +19,17 @@ class BoardCollections extends Component {
         };
 
         // this.openFormatter = this.openFormatter.bind(this);
+        this.loadCollectionsIntoTable = this.loadCollectionsIntoTable.bind(this);
         this.optionFormatter = this.optionFormatter.bind(this);
         this.onDeleteClick = this.onDeleteClick.bind(this);
         this.onRowClick = this.onRowClick.bind(this);
     }
 
     componentDidMount() {
+        this.loadCollectionsIntoTable();
+    }
+
+    loadCollectionsIntoTable(){
         CollectionService.getAll().then(
             response => {
                 this.setState({
@@ -42,10 +47,6 @@ class BoardCollections extends Component {
                 });
             }
         );
-
-
-
-
     }
 
     onRowClick(e, row, rowIndex){
@@ -55,7 +56,18 @@ class BoardCollections extends Component {
     onDeleteClick(e){
         if (window.confirm('Are you sure you want to delete? ' + e.currentTarget.id)) {
             // Save it!
-            console.log('Thing was saved to the database.');
+            return CollectionService.deleteCollection(e.currentTarget.id)
+                .then(() => {
+                    this.loadCollectionsIntoTable();
+                })
+                .catch((e) => {
+                    alert("Error!");
+                    console.log(e)
+                })
+
+
+
+
         } else {
             // Do nothing!
             console.log('Thing was not saved to the database.');

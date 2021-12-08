@@ -9,7 +9,10 @@ const {users: User,
     collections: Collection,
     refreshTokens: RefreshToken,
     card: Card,
-    collectionCards: CollectionCard
+    collectionCards: CollectionCard,
+    set: tcgSet,
+    set_localisation: SetLocalisation,
+    card_localisation: CardLocalisation,
 } = db;
 
 const collectionUtils = require("../middleware/collectionUtils");
@@ -28,9 +31,103 @@ exports.getAll = (req, res) => {
         });
 };
 
+exports.getCollectionCards = (req, res) => {
+    CollectionCard.findAll({
+        include: [
+            {
+                model: Collection,
+                required: false,
+                as: 'collection',
+                attributes: [],
+            },
+            {
+                model: Card,
+                required: false,
+                as: 'card',
+                attributes: [],
+                include: [
+                    {
+                        model: tcgSet,
+                        required: true,
+                        as: 'cardSet',
+                        include: [
+                            {
+                                model: SetLocalisation,
+                                required: true,
+                                as: 'set_localisations',
+                                attributes: [],
+                            }
+                        ]
+                    },
+                    {
+                        model: CardLocalisation,
+                        required: true,
+                        as: 'card_localisations',
+                        attributes: [],
+                    }
+                 ]
+
+
+                // include: [
+                //     {
+                //         model: tcgSet,
+                //         required: true,
+                //         as: 'cardSet',
+                //         include: [
+                //             // {
+                //             //     model: SetLocalisation,
+                //             //     required: true,
+                //             //     as: 'set_localisations',
+                //             // }
+                //         ]
+                //     },
+                //     {
+                //         // model: CardLocalisation,
+                //         // required: true,
+                //         // as: 'card_localisations',
+                //     }
+                // ],
+            }
+        ],
+        attributes: [
+            [db.Sequelize.literal('CONCAT("collectionCards"."collectionId", \'/\', "collectionCards"."cardId")'), 'cardKey'],
+            'collection_card_key',
+            'cardId',
+            'collectionId',
+            [db.Sequelize.literal('"card"."number" '), 'number'],
+            [db.Sequelize.literal('"card"."number" || \'/\' || "card->cardSet"."printedTotal"'), 'numberFull'],
+            'orderNumber',
+            'count',
+            [db.Sequelize.literal('(((coalesce("collectionCards"."orderNumber", 0)/18)-(1/18))+1)'), 'binderPageNo'],
+            [db.Sequelize.literal('CASE WHEN "collectionCards"."orderNumber" % 18 = 0 THEN 18 ELSE "collectionCards"."orderNumber" % 18 END'), 'binderSlotNo'],
+            [db.Sequelize.literal('"card->card_localisations"."name"'), 'name'],
+            [db.Sequelize.literal('"card"."supertype"'), 'supertype'],
+            [db.Sequelize.literal('"card"."rarity"'), 'rarity'],
+            [db.Sequelize.literal('"card->cardSet"."series"'), 'setSeries'],
+            [db.Sequelize.literal('"card->cardSet"."printedTotal"'), 'setPrintedTotal'],
+            [db.Sequelize.literal('"card->cardSet"."total"'), 'setTotal'],
+            [db.Sequelize.literal('"card->cardSet"."releaseDate"'), 'setReleaseDate'],
+            [db.Sequelize.literal('"card->cardSet->set_localisations"."name"'), 'setName'],
+        ]
+    })
+        .then((collectionCards) => {
+            res.send(collectionCards)
+        })
+        .catch((error) =>{
+            console.log(error);
+            res.status(500).send(error.message)
+        })
+
+
+}
+
 exports.getOne = (req, res) => {
     collectionUtils.getCollectionDetail({id: req.params.collectionId})
         .then((collection) => {
+            if(!(collection.length) ){
+                res.status(404).send({});
+                return;
+            }
             var collection = (collection.length === 1) ? (collection[0].toJSON()) : {};
 
             collection.collectionCards = collection.collectionCards.map((card) => {
@@ -75,6 +172,7 @@ exports.createCollection = (req, res) => {
         name: req.body.name,
         creatorId: req.user.id,
         isDeleted: false,
+        filter: req.body.filter,
     })
         .then(collection => {
 
@@ -162,6 +260,7 @@ exports.getFromTcgApiFilter = (req, res) => {
             let cards_enriched = cards.map((card) => {
                 card.setReleaseDate = card.set.releaseDate;
                 card.fullCardNumber = card.number + "/" + card.set.printedTotal;
+                card.setName = card.set.name;
                 return card;
             })
 
@@ -173,4 +272,25 @@ exports.getFromTcgApiFilter = (req, res) => {
         .catch((err) => {
             res.status(500).send(err.message);
         })
+};
+
+exports.deleteOne = (req, res) => {
+    if(!('collectionId' in req.params)){
+        res.status(500).send({message: "Missing parameter collectionId"});
+    }
+
+    Collection.update(
+        { isDeleted: true},
+        { where: { id: req.params.collectionId } }
+    )
+        .then(result => {
+                res.status(200).send("")
+            }
+        )
+        .catch(err => {
+                res.status(500).send(err.message)
+            }
+        )
+
+
 };

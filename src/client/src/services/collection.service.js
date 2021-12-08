@@ -9,6 +9,10 @@ class CollectionService {
         return axios.get(API_URL);
     }
 
+    getEpic() {
+        return axios.get(API_BASE_URL + "epic");
+    }
+
     getOneDetail(id) {
         return axios.get(API_URL + "/" + id);
 
@@ -49,6 +53,16 @@ class CollectionService {
         return axios.get(API_BASE_URL + 'tcgApiQuery',
             { params: {query:query }}
             );
+    }
+
+    deleteCollection(id){
+        let headers = authHeader();
+        headers.yeet = 'ass';
+
+        // axios.delete(API_BASE_URL + 'collection' + "/" + id)
+
+        return axios.delete(API_BASE_URL + 'collection' + "/" + id, {headers: headers})
+
     }
 }
 

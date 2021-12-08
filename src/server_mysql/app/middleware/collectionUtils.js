@@ -138,6 +138,8 @@ const getCollectionDetail = (filter) => {
                         'collectionId',
                         'orderNumber',
                         'count',
+                        [db.Sequelize.literal('(((coalesce("collectionCards"."orderNumber", 0)/18)-(1/18))+1)'), 'binderPageNo'],
+                        [db.Sequelize.literal('CASE WHEN "collectionCards"."orderNumber" % 18 = 0 THEN 18 ELSE "collectionCards"."orderNumber" % 18 END'), 'binderSlotNo'],
                         [db.Sequelize.literal('"collectionCards->card->card_localisations"."name"'), 'name'],
                         [db.Sequelize.literal('"collectionCards->card"."supertype"'), 'supertype'],
                         [db.Sequelize.literal('"collectionCards->card"."rarity"'), 'rarity'],

@@ -23,10 +23,19 @@ module.exports = function(app) {
         controller.getOne
     );
 
+    app.delete(
+        "/api/collection/:collectionId",
+        controller.deleteOne
+    );
+
     app.get(
         "/api/collection",
         controller.getFilter
     );
+    app.get(
+        '/api/epic',
+        controller.getCollectionCards
+    )
 
     // app.put(
     //     "/api/collection/:collectionId",
