@@ -9,3 +9,9 @@ Step 2 to enable refresh Token
 Step 3 to create front end
     
     https://www.bezkoder.com/react-redux-jwt-auth/
+    
+    
+    
+Table filters:
+Row filter: https://codesandbox.io/s/7kky87yv2x
+How to choose custom columns: https://codesandbox.io/s/ootfu

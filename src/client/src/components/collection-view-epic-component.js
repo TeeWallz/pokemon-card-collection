@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import {Link, useNavigate} from "react-router-dom";
 
 import CollectionService from "../services/collection.service";
+import filterFactory, { textFilter } from "react-bootstrap-table2-filter";
 import Button from 'react-bootstrap/Button';
 import Table from "react-bootstrap/Table";
 import ToggleButton from "react-bootstrap/ToggleButton";
@@ -16,19 +17,22 @@ import Col from "react-bootstrap/Col";
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import 'react-bootstrap-table2-toolkit/dist/react-bootstrap-table2-toolkit.min.css';
 import ToolkitProvider, { Search } from 'react-bootstrap-table2-toolkit';
+import Row from "react-bootstrap/Row";
 const { SearchBar } = Search;
 
 
 class CollectionViewEpic extends Component {
     constructor(props) {
         super(props);
-        // this.handleCardCollectedCheckboxClick = this.handleCardCollectedCheckboxClick.bind(this);
+        this.handleCardCollectedCheckboxClick = this.handleCardCollectedCheckboxClick.bind(this);
         // this.handleSaveCollectionButtonClick = this.handleSaveCollectionButtonClick.bind(this);
         // this.cardCollectedToggle = this.cardCollectedToggle.bind(this);
 
         this.state = {
             collectionCards:[],
+            changedCards: new Set(),
             collectionId: this.props.id,
+            checkChanged: true,
         };
     }
 
@@ -38,7 +42,7 @@ class CollectionViewEpic extends Component {
                 this.setState({
                     collectionCards: response.data
                 }, () => {
-                    console.log(this.state)
+                    // console.log(this.state)
                 });
             },
             error => {
@@ -72,30 +76,30 @@ class CollectionViewEpic extends Component {
     //     return ass;
     // }
     //
-    // handleCardCollectedCheckboxClick(e) {
-    //     console.log(e.currentTarget.id);
-    //     // Why in the living fuck is this null, why does the toogle's ID not inherit correctly
-    //     // Do this bullshit instead
-    //     const id = e.currentTarget.htmlFor;
+    handleCardCollectedCheckboxClick(e) {
+        // console.log(e.currentTarget.id);
+        // Why in the living fuck is this null, why does the toogle's ID not inherit correctly
+        // Do this bullshit instead
+        const id = e.currentTarget.htmlFor;
+
+        let stateRow = this.state.collectionCards.find(item => item.collection_card_key === id);
+        stateRow.count = (stateRow.count) ? 0 : 1;
+        this.state.changedCards.add(id)
+        // debugger;
+
+        this.setState({ collectionCards: this.state.collectionCards , checkChanged: !this.state.checkChanged}, () => {
+            console.log('InOnClick: ', this.state.collectionCards[0].count );
+            console.log('InOnClick: ', this.state.checkChanged );
+            console.log('InOnClick: ', this.state.changedCards );
+            this.forceUpdate();
+        });
+    }
+
     //
-    //     const { collection } = { ...this.state };
-    //     const currentState = collection;
-    //
-    //     for (let card of collection.collectionCards) {
-    //         if(card.cardId === id){
-    //             card.count = (card.count) ? 0 : 1;
-    //             break;
-    //         }
-    //     }
-    //
-    //
-    //     this.setState({ collection: currentState });
-    // }
-    //
-    //
+    // //
     // handleSaveCollectionButtonClick(e) {
-    //     const { collection } = { ...this.state };
-    //     const currentCollection = JSON.parse(JSON.stringify(collection));
+    //     const { collectionCards } = { ...this.state };
+    //     const currentCollectionCards= JSON.parse(JSON.stringify(currentCollectionCards));
     //
     //     let collectionToSubmit = {"name": this.state.collection.name};
     //
@@ -114,13 +118,15 @@ class CollectionViewEpic extends Component {
 
 
     render() {
-        console.log(this.state.collection);
-
+        // console.log('---');
+        // console.log(this.state.collectionCards);
+        // console.log('---');
         const columns = [
             {
                 dataField: 'collection_card_key',
                 text: 'collection_card_key',
                 hidden: true,
+                sort: true,
 
             },
             {
@@ -129,6 +135,7 @@ class CollectionViewEpic extends Component {
                 headerStyle: (colum, colIndex) => {
                     return { width: '3em'};
                 },
+                sort: true,
 
             },
             {
@@ -137,6 +144,7 @@ class CollectionViewEpic extends Component {
                 headerStyle: (colum, colIndex) => {
                     return { width: '3em' };
                 },
+                sort: true,
             },
             {
                 dataField: 'binderSlotNo',
@@ -144,6 +152,16 @@ class CollectionViewEpic extends Component {
                 headerStyle: (colum, colIndex) => {
                     return { width: '3em' };
                 },
+                sort: true,
+            },
+            {
+                dataField: 'collectionName',
+                text: 'collection name',
+                searchable: true,
+                // headerStyle: (colum, colIndex) => {
+                //     return { width: '6em' };
+                // },
+                sort: true,
             },
             {
                 dataField: 'numberFull',
@@ -152,36 +170,87 @@ class CollectionViewEpic extends Component {
                 headerStyle: (colum, colIndex) => {
                     return { width: '6em' };
                 },
+                sort: true,
             },
             {
                 dataField: 'cardId',
                 text: 'cardId',
                 searchable: true,
                 hidden: true,
+                sort: true,
             },
             {
                 dataField: 'name',
                 text: 'name',
                 searchable: true,
+                sort: true,
+                // headerStyle: (colum, colIndex) => {
+                //     return { width: '15em' };
+                // },
             },
             {
                 dataField: 'rarity',
                 text: 'rarity',
                 searchable: true,
+                sort: true,
+                headerStyle: (colum, colIndex) => {
+                    return { width: '10em' };
+                },
             },
             {
                 dataField: 'setName',
                 text: 'setName',
                 searchable: true,
+                style: (row, rowIndex) => {
+                    return {
+                        whiteSpace: "nowrap",
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                    }
+                },
+                sort: true,
             },
             {
                 dataField: 'setReleaseDate',
-                text: 'setReleaseDate',
+                text: 'release date',
                 searchable: true,
+                sort: true,
+                headerStyle: (colum, colIndex) => {
+                    return { width: '7em' };
+                },
             },
             {
                 dataField: 'Collected',
-                text: 'Collected'
+                text: 'Collected',
+                headerStyle: (colum, colIndex) => {
+                    return { width: '7em' };
+                },
+                formatExtraData: {collectionCards: this.state.collectionCards, changed: this.state.checkChanged},
+                formatter: (cell, row, rowIndex, formatExtraData ) => {
+                    const myFuckingData = formatExtraData.collectionCards;
+                    const stateRow = myFuckingData.find(item => item.collection_card_key === row.collection_card_key);
+
+
+                    let ass =  (
+                        <ToggleButton
+                            className="my-0"
+                            id={row.collection_card_key}
+                            type="checkbox"
+                            variant="outline-primary"
+                            checked={(stateRow.count) == 1 ? true : false}
+                            value={stateRow.count}
+                            onClick={this.handleCardCollectedCheckboxClick}
+                            data={row.cardId}
+                            size="sm"
+                        >
+                            {/*{(card.count) ? <i className="bi bi-check-circle-fill"></i> : <i class="bi bi-circle"></i>}*/}
+                            {(stateRow.count) ? <i className="bi bi-check2-circle"></i> : <i className="bi bi-circle"></i>} {stateRow.count}  / {rowIndex}
+                        </ToggleButton>
+
+                    )
+                    // debugger;
+                    return ass;
+                },
             }
 
 
@@ -191,13 +260,17 @@ class CollectionViewEpic extends Component {
 
 
         return (
-            <div className="container">
-                {/*<header className="jumbotron">*/}
-                {/*    /!*<h3>{this.state.content}</h3>*!/*/}
-                {/*    <h1>Collection - {this.state.collection?.name}</h1>*/}
-                {/*</header>*/}
-                {/*<Button onClick={this.handleSaveCollectionButtonClick} >Save Collection</Button>*/}
-                {/*<div>*/}
+            <div className="container-fluid">
+
+                <Row>
+                    <Col classNames={"col-md-auto"}>
+                        <h3>Search for cards:</h3>
+                    </Col>
+                    <Col xs={1}>
+                        <Button variant="primary">Save</Button>
+                    </Col>
+
+                </Row>
 
 
 
@@ -210,18 +283,19 @@ class CollectionViewEpic extends Component {
                     srText={"sss"}
 
 
+
                     search
                 >
                     {
                         props => (
                             <div>
-                                <h3>Search for cards:</h3>
                                 <SearchBar { ...props.searchProps } />
                                 <hr />
                                 <BootstrapTable
                                     { ...props.baseProps }
-                                    pagination={ paginationFactory() }
+                                    pagination={ paginationFactory({paginationSize: 20}) }
                                     srText={"sss"}
+                                    formatExtraData={ this.state.collectionCards }
                                 >
                                 </BootstrapTable>
                             </div>

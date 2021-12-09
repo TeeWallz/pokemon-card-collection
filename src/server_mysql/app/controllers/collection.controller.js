@@ -33,6 +33,11 @@ exports.getAll = (req, res) => {
 
 exports.getCollectionCards = (req, res) => {
     CollectionCard.findAll({
+        order: [
+            // will return `name`
+            [db.Sequelize.literal('"collection"."name" ')],
+            ['orderNumber'],
+        ],
         include: [
             {
                 model: Collection,
@@ -66,27 +71,6 @@ exports.getCollectionCards = (req, res) => {
                         attributes: [],
                     }
                  ]
-
-
-                // include: [
-                //     {
-                //         model: tcgSet,
-                //         required: true,
-                //         as: 'cardSet',
-                //         include: [
-                //             // {
-                //             //     model: SetLocalisation,
-                //             //     required: true,
-                //             //     as: 'set_localisations',
-                //             // }
-                //         ]
-                //     },
-                //     {
-                //         // model: CardLocalisation,
-                //         // required: true,
-                //         // as: 'card_localisations',
-                //     }
-                // ],
             }
         ],
         attributes: [
@@ -94,6 +78,7 @@ exports.getCollectionCards = (req, res) => {
             'collection_card_key',
             'cardId',
             'collectionId',
+            [db.Sequelize.literal('"collection"."name" '), 'collectionName'],
             [db.Sequelize.literal('"card"."number" '), 'number'],
             [db.Sequelize.literal('"card"."number" || \'/\' || "card->cardSet"."printedTotal"'), 'numberFull'],
             'orderNumber',
