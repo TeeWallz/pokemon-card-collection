@@ -35,7 +35,12 @@ module.exports = function(sequelize, DataTypes) {
           throw new Error('generatedValue is read-only')
         },
       }
-    }
+    },
+    purchased: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
   }, {
     sequelize,
     schema: 'site_data',

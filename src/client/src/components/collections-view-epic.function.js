@@ -4,10 +4,10 @@ import React from "react";
 import CollectionViewEpic from "./collection-view-epic-component";
 
 function CollectionViewWrapper(props) {
-    const { id } = useParams();
+    const { collectionid } = useParams();
     return (
         // <CollectionView id={id}/>
-        <CollectionViewEpic id={id}/>
+        <CollectionViewEpic collectionid={collectionid}/>
     );
 }
 

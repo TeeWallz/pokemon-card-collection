@@ -37,6 +37,8 @@ module.exports = function(app) {
         controller.getCollectionCards
     )
 
+
+
     // app.put(
     //     "/api/collection/:collectionId",
     //     controller.putCollection
@@ -50,6 +52,11 @@ module.exports = function(app) {
     app.get(
         "/api/tcgApiQuery",
         controller.getFromTcgApiFilter
+    );
+
+    app.put(
+        "/api/collectionCards",
+        controller.patchCollectionCards
     );
 
 

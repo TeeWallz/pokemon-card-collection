@@ -9,8 +9,8 @@ class CollectionService {
         return axios.get(API_URL);
     }
 
-    getEpic() {
-        return axios.get(API_BASE_URL + "epic");
+    getEpic(query) {
+        return axios.get(API_BASE_URL + "epic", { params: {collectionId: 'db8a0cd0-558d-11ec-8e83-fdb9d4163a20'}});
     }
 
     getOneDetail(id) {
@@ -64,6 +64,16 @@ class CollectionService {
         return axios.delete(API_BASE_URL + 'collection' + "/" + id, {headers: headers})
 
     }
+
+    patchCollectionCards(cards){
+        let headers = authHeader();
+
+        // axios.delete(API_BASE_URL + 'collection' + "/" + id)
+
+        return axios.put(API_BASE_URL + 'collectionCards', {collectionCards: cards}, {headers: headers})
+    }
+
+
 }
 
 export default new CollectionService();

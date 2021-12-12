@@ -24,6 +24,7 @@ import { history } from './helpers/history';
 import AuthVerify from "./common/auth-verify";
 import NotFound from "./components/NotFound";
 import CollectionViewEpic from "./components/collection-view-epic-component";
+import CollectionViewEpicWrapper from "./components/collections-view-epic.function";
 import CollectionViewWrapper from "./components/collection-view.function";
 
 class App extends Component {
@@ -170,9 +171,11 @@ class App extends Component {
 
                 <Route path="/collections" element={<BoardCollections/>} />
                 <Route path="/collection/create" element={<CreateCollection/>} />
+
                 <Route path="/collection/:id" element={<CollectionViewWrapper/>} />
 
-                <Route path="/epic" element={<CollectionViewEpic/>} />
+                <Route path="/epic" element={<CollectionViewEpicWrapper/>} />
+                {/*<Route path="/epic/:collectionId" element={<CollectionViewEpicWrapper/>} />*/}
                 <Route path="*" element={<NotFound/>} />
 
 

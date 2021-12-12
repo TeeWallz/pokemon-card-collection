@@ -5,9 +5,16 @@ import {Link, useNavigate} from "react-router-dom";
 import CollectionService from "../services/collection.service";
 import Button from 'react-bootstrap/Button';
 import Table from "react-bootstrap/Table";
-import {BootstrapTable, TableHeaderColumn} from "react-bootstrap-table";
+import BootstrapTable from 'react-bootstrap-table-next';
+import filterFactory, { textFilter, selectFilter, multiSelectFilter, numberFilter } from "react-bootstrap-table2-filter";
+import 'react-bootstrap-table2-toolkit/dist/react-bootstrap-table2-toolkit.min.css';
+import ToolkitProvider, { Search } from 'react-bootstrap-table2-toolkit';
 import Col from "react-bootstrap/Col";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import paginationFactory from "react-bootstrap-table2-paginator";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
+import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css';
 
 
 class BoardCollections extends Component {
@@ -105,9 +112,49 @@ class BoardCollections extends Component {
 
         const rowEvents = {
             onClick: (e, row, rowIndex) => {
-                console.log(row);
+                const link = "/collection/" +  row.id;
+                window.open(link, "_blank")
             }
         };
+
+
+        const columns = [
+            {
+                dataField: 'name',
+                text: 'name',
+                sort: true,
+            },
+            {
+                dataField: 'collectedCardsUnique',
+                text: 'Collected',
+                sort: true,
+            },
+            {
+                dataField: 'totalCards',
+                text: 'totalCards',
+                sort: true,
+            },
+            {
+                dataField: 'status',
+                text: 'status',
+                sort: true,
+                sortFunc: (a, b, order, dataField, rowA, rowB) => {
+                    if (order === 'asc') {
+                        return b - a;
+                    }
+                    return a - b; // desc
+                },
+                formatter: (cell, row, rowIndex, formatExtraData ) => {
+                    return row.statusString;
+                }
+            }
+        ];
+
+
+
+
+
+
 
         return (
             <div className="container">
@@ -118,20 +165,31 @@ class BoardCollections extends Component {
                     <div>
                         {/*{collectionList}*/}
 
-                        <BootstrapTable data={this.state.collections}
-                                        striped={true}
-                                        hover={true}
-                                        rowEvents={rowEvents}
+                        <BootstrapTable
+                            data={this.state.collections}
+                            columns={columns}
+                            keyField={"id"}
+                            striped={true}
+                            hover={true}
+                            rowEvents={ rowEvents }
                         >
-                            <TableHeaderColumn dataField="name" isKey={true} dataAlign="center" dataSort={true}>Name</TableHeaderColumn>
-                            <TableHeaderColumn dataField="collectedCardsUnique" dataSort={true}>collectedCardsUnique</TableHeaderColumn>
-                            <TableHeaderColumn dataField="totalCards" dataSort={true}>totalCards</TableHeaderColumn>
-                            <TableHeaderColumn dataField="status" dataSort={true}>status</TableHeaderColumn>
-                            <TableHeaderColumn dataField="filter" dataSort={true}>filter</TableHeaderColumn>
-                            {/*<TableHeaderColumn width={"3em"} dataField="id" dataSort={true} dataFormat={this.openFormatter}></TableHeaderColumn>*/}
-                            <TableHeaderColumn width={"4em"} dataField="id" dataSort={true} dataFormat={this.optionFormatter}></TableHeaderColumn>
-                            {/*<TableHeaderColumn dataField="price" dataFormat={priceFormatter}>Product Price</TableHeaderColumn>*/}
                         </BootstrapTable>
+
+
+                        {/*<BootstrapTable data={this.state.collections}*/}
+                        {/*                striped={true}*/}
+                        {/*                hover={true}*/}
+                        {/*                // rowEvents={rowEvents}*/}
+                        {/*>*/}
+                        {/*    <TableHeaderColumn dataField="name" isKey={true} dataAlign="center" dataSort={true}>Name</TableHeaderColumn>*/}
+                        {/*    <TableHeaderColumn dataField="collectedCardsUnique" dataSort={true}>collectedCardsUnique</TableHeaderColumn>*/}
+                        {/*    <TableHeaderColumn dataField="totalCards" dataSort={true}>totalCards</TableHeaderColumn>*/}
+                        {/*    <TableHeaderColumn dataField="status" dataSort={true}>status</TableHeaderColumn>*/}
+                        {/*    <TableHeaderColumn dataField="filter" dataSort={true}>filter</TableHeaderColumn>*/}
+                        {/*    /!*<TableHeaderColumn width={"3em"} dataField="id" dataSort={true} dataFormat={this.openFormatter}></TableHeaderColumn>*!/*/}
+                        {/*    <TableHeaderColumn width={"4em"} dataField="id" dataSorter="numericOnly" dataSort={true} dataFormat={this.optionFormatter}></TableHeaderColumn>*/}
+                        {/*    /!*<TableHeaderColumn dataField="price" dataFormat={priceFormatter}>Product Price</TableHeaderColumn>*!/*/}
+                        {/*</BootstrapTable>*/}
 
                     </div>
                 </header>

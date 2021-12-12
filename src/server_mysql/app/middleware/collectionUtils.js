@@ -16,43 +16,37 @@ const {users: User,
 const getCollectionSummary = (filter) => {
     // Return collection promise
     return new Promise((resolve, reject) => {
-        let status_query =  'CONCAT((CASE WHEN totalCards > 0 THEN ((collectedCardsUnique/totalCards) * 100) ELSE 0 END)::varchar(255), \'%\')';
-        status_query = status_query.replaceAll('totalCards', 'COUNT("collectionCards"."cardId")');
-        status_query = status_query.replaceAll('collectedCardsUnique', 'COUNT("collectionCards_alias2"."cardId")');
 
         Collection.findAll({
             where: filter,
             group: ['collections.id', 'creator.id'],
+            order: db.Sequelize.literal('"collections"."name" asc'),
             attributes: [
                 'id',
                 'name',
                 'filter',
-                [db.sequelize.fn('COUNT', db.sequelize.col('collectionCards.cardId')), 'totalCards'],
-                [db.sequelize.fn('COUNT', db.sequelize.col('collectionCards_alias2.cardId')), 'collectedCardsUnique'],
-                [db.sequelize.literal(status_query), 'status'],
+                [db.Sequelize.literal('COUNT("collectionCards"."cardId")'), 'totalCards'],
+                [db.Sequelize.literal('SUM(LEAST("collectionCards".count, 1))'), 'collectedCardsUnique'],
+                [db.Sequelize.literal('SUM("collectionCards".count)'), 'collectedCardsTotal'],
+                [db.sequelize.literal('CASE WHEN COUNT("collectionCards"."cardId") > 0 THEN CEILING(((SUM(LEAST("collectionCards".count, 1))::decimal/COUNT("collectionCards"."cardId")) * 100)) ELSE 69 END'), 'status'],
+                [db.sequelize.literal('CASE WHEN COUNT("collectionCards"."cardId") > 0 THEN ROUND(((SUM(LEAST("collectionCards".count, 1))::decimal/COUNT("collectionCards"."cardId")) * 100), 2) ELSE 69 END'), 'statusDecimal'],
+                [db.sequelize.literal('CONCAT((CASE WHEN COUNT("collectionCards"."cardId") > 0 THEN ROUND(((SUM(LEAST("collectionCards".count, 1))::decimal/COUNT("collectionCards"."cardId")) * 100), 2) ELSE 69 END)::varchar(255), \'%\')'), 'statusString'],
                 // [db.sequelize.fn('SUM', db.sequelize.col('ReceiptPayments.receivedPayment')), 'totalPayment']
             ],
             include: [
+                // {
+                //     model: CollectionCard,
+                //     required: false,
+                //     attributes: [],
+                //     as: 'collectionCards_alias2',
+                //     where: { count : {[Op.gt]: 0,}}
+                // }
                 {
-                    model: CollectionCard,
-                    required: false,
-                    attributes: [],
-                    as: 'collectionCards_alias2',
-                    where: { count : {[Op.gt]: 0,}}
-                }
-                ,{
                     model: CollectionCard,
                     required: false,
                     attributes: [],
                     as: 'collectionCards',
                     // where: { count : {[Op.gt]: 0,}}
-                },
-                {
-                    model: CollectionCard,
-                    required: false,
-                    attributes: [],
-                    as: 'collectionCards_alias2',
-                    where: { count : {[Op.gt]: 0,}}
                 },
                 {
                     model: User,

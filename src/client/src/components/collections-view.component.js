@@ -10,6 +10,9 @@ import {ArrowRight, CaretDownSquare} from 'react-bootstrap-icons';
 import "bootstrap-icons/font/bootstrap-icons.css";
 import {BootstrapTable, TableHeaderColumn} from "react-bootstrap-table";
 import Col from "react-bootstrap/Col";
+import ToolkitProvider from "react-bootstrap-table2-toolkit";
+import paginationFactory from "react-bootstrap-table2-paginator";
+import filterFactory from "react-bootstrap-table2-filter";
 
 
 class CollectionView extends Component {
@@ -116,29 +119,77 @@ class CollectionView extends Component {
     render() {
         console.log(this.state.collection);
 
+        let collectedCount = this.state.collection.collectionCards.reduce((previousValue, currentValue) => previousValue + Math.min(currentValue, 1), 0);
+
+        collectedCount = this.state.collection.collectionCards.reduce((a, b) => {
+            // console.log(a);
+            // debugger;
+            return a + b.count;
+            }
+            , 0);
+
+
+
+        let completion = 0;
+        if(this.state.collection.collectionCards.length > 0){
+            completion = collectedCount / this.state.collection.collectionCards.length
+        }
+        completion = completion * 100;
+        completion = Math.round(completion, 2) + '%';
+
+        if(this.state.collection.collectionCards.length > 0){
+            // debugger;
+        }
 
 
         return (
             <div className="container">
                 <header className="jumbotron">
-                    {/*<h3>{this.state.content}</h3>*/}
-                    <h1>Collection - {this.state.collection?.name}</h1>
+                    <h1>Collection {this.state.collection?.name} - {completion}</h1>
                 </header>
                 <Button onClick={this.handleSaveCollectionButtonClick} >Save Collection</Button>
                 <div>
+                    {/*<ToolkitProvider*/}
+                    {/*    // data={this.state.collectionCards}*/}
+                    {/*    data={this.state.collection?.collectionCards}*/}
+                    {/*    columns={columns}*/}
+                    {/*    keyField={"collection_card_key"}*/}
+                    {/*    striped={true}*/}
+                    {/*    hover={true}*/}
+                    {/*    srText={"sss"}*/}
 
 
-                    <BootstrapTable data={this.state.collection?.collectionCards} striped={true} hover={true}>
-                        <TableHeaderColumn dataField="orderNumber" dataAlign="center" dataSort={true}>orderNumber</TableHeaderColumn>
-                        <TableHeaderColumn dataField="binderPageNo" dataAlign="center" dataSort={true}>binderPageNo</TableHeaderColumn>
-                        <TableHeaderColumn dataField="binderSlotNo" dataAlign="center" dataSort={true}>binderSlotNo</TableHeaderColumn>
-                        <TableHeaderColumn dataField="cardId" isKey={true} dataAlign="center" dataSort={true}>cardId</TableHeaderColumn>
-                        <TableHeaderColumn dataField="name" dataSort={true}>name</TableHeaderColumn>
-                        <TableHeaderColumn dataField="rarity" dataSort={true}>rarity</TableHeaderColumn>
-                        <TableHeaderColumn dataField="Collected" dataSort={true} dataFormat={this.cardCollectedToggle}>Collected</TableHeaderColumn>
-                        <TableHeaderColumn dataField="setReleaseDate" dataSort={true}>Release Date</TableHeaderColumn>
-                        {/*<TableHeaderColumn dataField="price" dataFormat={cardCollectedToggle}>Product Price</TableHeaderColumn>*/}
-                    </BootstrapTable>
+
+                    {/*    search*/}
+                    {/*>*/}
+                    {/*    {*/}
+                    {/*        props => (*/}
+                    {/*            <div>*/}
+                    {/*                <BootstrapTable*/}
+                    {/*                    { ...props.baseProps }*/}
+                    {/*                    pagination={ paginationFactory({paginationSize: 20}) }*/}
+                    {/*                    srText={"sss"}*/}
+                    {/*                    formatExtraData={ this.state.collectionCards }*/}
+                    {/*                    filter={ filterFactory() }*/}
+                    {/*                >*/}
+                    {/*                </BootstrapTable>*/}
+                    {/*            </div>*/}
+                    {/*        )*/}
+                    {/*    }*/}
+                    {/*</ToolkitProvider>*/}
+
+                    {/*<BootstrapTable data={this.state.collection?.collectionCards} striped={true} hover={true}>*/}
+                    {/*    <TableHeaderColumn dataField="orderNumber" dataAlign="center" dataSort={true}>orderNumber</TableHeaderColumn>*/}
+                    {/*    <TableHeaderColumn dataField="binderPageNo" dataAlign="center" dataSort={true}>binderPageNo</TableHeaderColumn>*/}
+                    {/*    <TableHeaderColumn dataField="binderSlotNo" dataAlign="center" dataSort={true}>binderSlotNo</TableHeaderColumn>*/}
+                    {/*    <TableHeaderColumn dataField="cardId" isKey={true} dataAlign="center" dataSort={true}>cardId</TableHeaderColumn>*/}
+                    {/*    <TableHeaderColumn dataField="name" dataSort={true}>name</TableHeaderColumn>*/}
+                    {/*    <TableHeaderColumn dataField="rarity" dataSort={true}>rarity</TableHeaderColumn>*/}
+                    {/*    <TableHeaderColumn dataField="setName" dataSort={true}>setName</TableHeaderColumn>*/}
+                    {/*    <TableHeaderColumn dataField="Collected" dataSort={true} dataFormat={this.cardCollectedToggle}>Collected</TableHeaderColumn>*/}
+                    {/*    <TableHeaderColumn dataField="setReleaseDate" dataSort={true}>Release Date</TableHeaderColumn>*/}
+                    {/*    /!*<TableHeaderColumn dataField="price" dataFormat={cardCollectedToggle}>Product Price</TableHeaderColumn>*!/*/}
+                    {/*</BootstrapTable>*/}
                 </div>
             </div>
         );
@@ -154,8 +205,3 @@ function mapStateToProps(state) {
 
 
 export default connect(mapStateToProps)(CollectionView);
-
-
-// TODO ADD BOOTSTRAPTABLE INTO COLLECTION VIEW TO ORDERNUM AND DATE CAN BE SORTED
-// ALSO DO "START COLLECTION" SCREEB TO SHOW ALL CaretDownSquare
-// ADD TYPING FILTER?
