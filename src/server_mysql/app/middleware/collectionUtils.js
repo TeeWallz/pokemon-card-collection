@@ -130,6 +130,7 @@ const getCollectionDetail = (filter) => {
                     attributes: [
                         'cardId',
                         'collectionId',
+                        [db.Sequelize.literal('"collectionCards->card"."card_number_int"'), 'card_number_int'],
                         'orderNumber',
                         'count',
                         [db.Sequelize.literal('(((coalesce("collectionCards"."orderNumber", 0)/18)-(1/18))+1)'), 'binderPageNo'],

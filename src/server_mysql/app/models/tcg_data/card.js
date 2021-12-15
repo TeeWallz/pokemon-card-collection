@@ -38,6 +38,12 @@ module.exports = function(sequelize, DataTypes) {
         model: 'rarity',
         key: 'name'
       }
+    },
+    card_number_int: {
+      type: 'int8 NULL GENERATED ALWAYS AS (ltrim("substring"(id::text, \'(\\d+)(?:[_a|_A|b])*$\'::text), \'0\'::text)::bigint) STORED',
+      set() {
+        throw new Error('generatedValue is read-only')
+      },
     }
   }, {
     sequelize,

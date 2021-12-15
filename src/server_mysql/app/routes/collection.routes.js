@@ -23,6 +23,11 @@ module.exports = function(app) {
         controller.getOne
     );
 
+    app.get(
+        "/api/fixOrder",
+        controller.fixOrder
+    );
+
     app.delete(
         "/api/collection/:collectionId",
         controller.deleteOne

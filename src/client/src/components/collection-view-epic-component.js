@@ -58,6 +58,7 @@ class CollectionViewEpic extends Component {
         let epicFilter = {};
         if (this.state.collectionId != undefined){
             epicFilter = {"collectionId":this.state.collectionId }
+            // {collectionId: 'db8a0cd0-558d-11ec-8e83-fdb9d4163a20'}
         }
         console.log( {epicFilter} )
 
@@ -98,17 +99,18 @@ class CollectionViewEpic extends Component {
 
     handleCardCollectedCheckboxClick(e) {
         const id = e.currentTarget.htmlFor;
-
+        let {changedCards} = this.state;
         let stateRow = this.state.collectionCards.find(item => item.collection_card_key === id);
         stateRow.count = (stateRow.count) ? 0 : 1;
-        this.state.changedCards.add(id)
+        changedCards.add(id)
         // debugger;
 
-        this.setState({ collectionCards: this.state.collectionCards , checkChanged: !this.state.checkChanged}, () => {
+        this.setState({ collectionCards: this.state.collectionCards , checkChanged: !this.state.checkChanged, changedCards:changedCards}, () => {
             console.log('InOnClick: ', this.state.collectionCards[0].count );
             console.log('InOnClick: ', this.state.checkChanged );
             console.log('InOnClick: ', this.state.changedCards );
             this.forceUpdate();
+            this.handleSaveCollectionButtonClick('test');
         });
     }
     handleCardPurchasedCheckboxClick(e) {
@@ -139,7 +141,9 @@ class CollectionViewEpic extends Component {
 
         CollectionService.patchCollectionCards( cardsToSend )
             .then((response) => {
-                alert(response)
+                this.setState({ changedCards:new Set() }, () => {
+                    this.forceUpdate();
+                });
             })
             .catch((err) => {
                 alert(err)
@@ -162,38 +166,7 @@ class CollectionViewEpic extends Component {
         // }
 
         const columns = [
-            {
-                dataField: 'collection_card_key',
-                text: 'collection_card_key',
-                hidden: true,
-                sort: true,
 
-            },
-            {
-                dataField: 'orderNumber',
-                text: 'col',
-                headerStyle: (colum, colIndex) => {
-                    return { width: '3em'};
-                },
-                sort: true,
-
-            },
-            {
-                dataField: 'binderPageNo',
-                text: 'pg',
-                headerStyle: (colum, colIndex) => {
-                    return { width: '3em' };
-                },
-                sort: true,
-            },
-            {
-                dataField: 'binderSlotNo',
-                text: 'slot',
-                headerStyle: (colum, colIndex) => {
-                    return { width: '3em' };
-                },
-                sort: true,
-            },
             {
                 dataField: 'collectionName',
                 text: 'collection name',
@@ -276,10 +249,45 @@ class CollectionViewEpic extends Component {
 
             },
             {
+                dataField: 'collection_card_key',
+                text: 'collection_card_key',
+                hidden: true,
+                sort: true,
+
+            },
+            {
+                dataField: 'orderNumber',
+                text: 'col',
+                headerStyle: (colum, colIndex) => {
+                    return { width: '3em'};
+                },
+                sort: true,
+
+            },
+            {
+                dataField: 'binderPageNo',
+                text: 'pg',
+                headerStyle: (colum, colIndex) => {
+                    return { width: '3em' };
+                },
+                sort: true,
+            },
+            {
+                dataField: 'binderSlotNo',
+                text: 'slot',
+                headerStyle: (colum, colIndex) => {
+                    return { width: '3em' };
+                },
+                sort: true,
+            },
+            {
                 dataField: 'count',
                 text: 'Collected',
                 filter: selectFilter({
-                    options: {0:0, 1:1},
+                    options: [
+                        { value: 0, label: 'N' },
+                        { value: 1, label: 'Y' },
+                    ]
                 }),
                 headerStyle: (colum, colIndex) => {
                     return { width: '7em' };
@@ -300,8 +308,8 @@ class CollectionViewEpic extends Component {
                             data={row.cardId}
                             size="sm"
                         >
-                            {/*{(card.count) ? <i className="bi bi-check-circle-fill"></i> : <i class="bi bi-circle"></i>}*/}
-                            {(stateRow.count) ? <i className="bi bi-check2-circle"></i> : <i className="bi bi-circle"></i>} {stateRow.count}  / {rowIndex}
+                            {(stateRow.count) ? <i className="bi bi-check-circle-fill"></i> : <i class="bi bi-circle"></i>}
+                            {/*{(stateRow.count) ? <i className="bi bi-check2-circle"></i> : <i className="bi bi-circle"></i>} {stateRow.count}  / {rowIndex}*/}
                         </ToggleButton>
 
                     )
@@ -311,7 +319,10 @@ class CollectionViewEpic extends Component {
                 dataField: 'purchased',
                 text: 'purchased',
                 filter: selectFilter({
-                    options: {true:'y', false:'n'},
+                    options: [
+                        { value: false, label: 'N' },
+                        { value: true, label: 'Y' },
+                    ]
                 }),
                 headerStyle: (colum, colIndex) => {
                     return { width: '7em' };
@@ -332,8 +343,8 @@ class CollectionViewEpic extends Component {
                             data={row.cardId}
                             size="sm"
                         >
-                            {/*{(card.count) ? <i className="bi bi-check-circle-fill"></i> : <i class="bi bi-circle"></i>}*/}
-                            {(stateRow.purchased) ? <i className="bi bi-check2-circle"></i> : <i className="bi bi-circle"></i>} {stateRow.purchased}  / {rowIndex}
+                            {(stateRow.purchased) ? <i className="bi bi-check-circle-fill"></i> : <i class="bi bi-circle"></i>}
+                            {/*{(stateRow.purchased) ? <i className="bi bi-check2-circle"></i> : <i className="bi bi-circle"></i>} {stateRow.purchased}  / {rowIndex}*/}
                         </ToggleButton>
 
                     )
@@ -397,7 +408,13 @@ class CollectionViewEpic extends Component {
                     keyField={"collection_card_key"}
                     striped={true}
                     hover={true}
-                    srText={"sss"}
+                    exportCSV={ {
+                        fileName: 'custom.csv',
+                        separator: '|',
+                        ignoreHeader: true,
+                        noAutoBOM: false
+                    } }
+                    condensed={true}
 
 
 
@@ -410,10 +427,25 @@ class CollectionViewEpic extends Component {
                                 <hr />
                                 <BootstrapTable
                                     { ...props.baseProps }
-                                    pagination={ paginationFactory({paginationSize: 20}) }
+
                                     srText={"sss"}
                                     formatExtraData={ this.state.collectionCards }
                                     filter={ filterFactory() }
+                                    pagination={ paginationFactory({sizePerPageList: [
+                                        {
+                                            text: '10', value: 10
+                                        }
+                                        , {
+                                            text: '30', value: 30
+                                        }
+                                        ,
+                                            {
+                                            text: 'All', value: this.state.collectionCards.length
+                                        } ]
+                                        // , paginationSize: 'All'
+                                    })
+
+                                    }
                                 >
                                 </BootstrapTable>
                             </div>

@@ -17,8 +17,15 @@ const {users: User,
 
 const collectionUtils = require("../middleware/collectionUtils");
 const pokemon = require('pokemontcgsdk');
-
 pokemon.configure({apiKey: '4440c304-d5c0-4939-b533-5befa084795c'})
+
+// function convertPokemonCardNoToInt(numberText){
+//     let result =
+//
+//
+//
+//     (ltrim("substring"(id::text, '(\d+)(?:[_a|_A|b])*$'::text), '0'::text)::bigint)
+// }
 
 exports.getAll = (req, res) => {
     Collection.findAll({where:{isDeleted: false}})
@@ -87,12 +94,13 @@ exports.getCollectionCards = (req, res) => {
             'cardId',
             'collectionId',
             [db.Sequelize.literal('"collection"."name" '), 'collectionName'],
+            [db.Sequelize.literal('"card"."card_number_int" '), 'card_number_int'],
             [db.Sequelize.literal('"card"."number" '), 'number'],
             [db.Sequelize.literal('"card"."number" || \'/\' || "card->cardSet"."printedTotal"'), 'numberFull'],
             'orderNumber',
             'count',
             'purchased',
-            [db.Sequelize.literal('(((coalesce("collectionCards"."orderNumber", 0)/18)-(1/18))+1)'), 'binderPageNo'],
+            [db.Sequelize.literal('(((coalesce("collectionCards"."orderNumber", 0)/18)-(1/18)))+1'), 'binderPageNo'],
             [db.Sequelize.literal('CASE WHEN "collectionCards"."orderNumber" % 18 = 0 THEN 18 ELSE "collectionCards"."orderNumber" % 18 END'), 'binderSlotNo'],
             [db.Sequelize.literal('"card->card_localisations"."name"'), 'name'],
             [db.Sequelize.literal('"card"."supertype"'), 'supertype'],
@@ -153,6 +161,107 @@ exports.getFilter = (req, res) => {
     collectionUtils.returnCollectionSummary(res, filter)
 };
 
+exports.fixOrder = (req, res) => {
+    CollectionCard.findAll({
+        order: [
+            'collectionId',
+            db.Sequelize.literal('"card->cardSet"."releaseDate" asc'),
+            db.Sequelize.literal('"card"."card_number_int" asc'),
+        ],
+        attributes:[
+            'orderNumber',
+            'count',
+            'cardId',
+            'collectionId',
+            'purchased',
+            'collection_card_key',
+            [db.Sequelize.literal('"card"."card_number_int"'), 'cardNumber'],
+            [db.Sequelize.literal('"card"."number"'), 'cardNumber'],
+            [db.Sequelize.literal('"collection"."name"'), 'collectionName'],
+            [db.Sequelize.literal('"card->cardSet"."releaseDate"'), 'releaseDate'],
+        ],
+        include: [
+            {
+                model: Collection,
+                required: false,
+                as: 'collection',
+            },
+            {
+                model: Card,
+                required: true,
+                as: 'card',
+                include: [
+                    {
+                        model: tcgSet,
+                        required: true,
+                        as: 'cardSet',
+                        include: [
+                            {
+                                model: SetLocalisation,
+                                required: true,
+                                as: 'set_localisations',
+                            }
+                        ]
+                    },
+                    {
+                        model: CardLocalisation,
+                        required: true,
+                        as: 'card_localisations',
+                    }
+                ],
+            }
+
+
+
+            ]
+        }
+    ).then(cards => {
+        let lastCollectionId = '';
+        let currentId = 1;
+        let promises = [];
+
+        for(let i = 0; i < cards.length; i++){
+            // Reset current orderNumbers when a new collection is found
+            if(cards[i].collectionId !== lastCollectionId){
+                lastCollectionId = cards[i].collectionId;
+                currentId = 0;
+
+                if(cards[i].collection.name === "Alolan Geodude Evo Line"){
+                    let ass = 1;
+                }
+            }
+            cards[i].cardId = cards[i].cardId;
+            cards[i].orderNumber = currentId;
+            // console.log(lastCollectionId, currentId, cards[i].card.cardSet.releaseDate, cards[i].cardId);
+            currentId++;
+
+            promises.push(CollectionCard.update(
+                { "orderNumber": currentId },
+                { where: { cardId: cards[i].cardId, collectionId:cards[i].collectionId   } }
+            ))
+
+        }
+
+        Promise.all(promises).then((values) => {
+            console.log("Done!");
+        });
+
+        // CollectionCard.bulkCreate(cards,
+        //     {
+        //         fields: ["cardId", "collectionId", "orderNumber"],
+        //         updateOnDuplicate: ["orderNumber"],
+        //     })
+        //     .then((cardsReturn) => {
+        //         res.status(200).send("")
+        //     })
+        //     .catch((err) => {
+        //         res.status(500).send(err.message)
+        //     })
+
+    })
+
+
+}
 
 exports.createCollection = (req, res) => {
     // const utils = require("../middleware/utils");
@@ -169,9 +278,11 @@ exports.createCollection = (req, res) => {
         filter: req.body.filter,
     })
         .then(collection => {
+            cards
+
 
             cards = cards.map((card, index) => {
-                card.orderNumber = index;
+                card.orderNumber = index+1;
                 card.cardId = card.id;
                 card.collectionId = collection.id;
                 return card;
@@ -238,12 +349,13 @@ exports.putCollectionRollback = putCollectionRollback;
 
 
 exports.getFromTcgApiFilter = (req, res) => {
-    const query = req.query.query;
+    let query = req.query.query;
 
     if(query == null || query === ""){
         res.status(500).send({message:"Empty Query"});
         return;
     }
+    // query = query + "&orderBy=number"
 
     console.log("Loading from API. Query: " + query)
     pokemon.card.all({ q: query })

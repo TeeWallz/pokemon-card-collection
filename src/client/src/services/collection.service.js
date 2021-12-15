@@ -10,7 +10,8 @@ class CollectionService {
     }
 
     getEpic(query) {
-        return axios.get(API_BASE_URL + "epic", { params: {collectionId: 'db8a0cd0-558d-11ec-8e83-fdb9d4163a20'}});
+        // return axios.get(API_BASE_URL + "epic", { params: {collectionId: 'db8a0cd0-558d-11ec-8e83-fdb9d4163a20'}});
+        return axios.get(API_BASE_URL + "epic", { params: query});
     }
 
     getOneDetail(id) {
