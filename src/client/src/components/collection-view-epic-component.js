@@ -18,9 +18,10 @@ import paginationFactory from 'react-bootstrap-table2-paginator';
 import 'react-bootstrap-table2-toolkit/dist/react-bootstrap-table2-toolkit.min.css';
 import ToolkitProvider, { Search } from 'react-bootstrap-table2-toolkit';
 import Row from "react-bootstrap/Row";
+import tcgApi from "../reducers/tcgApi";
 const { SearchBar } = Search;
 
-
+import { logout } from "./actions/";
 
 class CollectionViewEpic extends Component {
     constructor(props) {
@@ -461,9 +462,9 @@ class CollectionViewEpic extends Component {
 }
 
 function mapStateToProps(state) {
-    // const { message } = state.message;
+    const { tcgApi } = state.message;
     return {
-        // message,
+        tcgApi,
     };
 }
 

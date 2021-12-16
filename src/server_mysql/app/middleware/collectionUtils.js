@@ -13,6 +13,40 @@ const {users: User,
     card_localisation: CardLocalisation,
 } = db;
 
+const collectionUtils = require("../middleware/collectionUtils");
+const pokemon = require('pokemontcgsdk');
+pokemon.configure({apiKey: '4440c304-d5c0-4939-b533-5befa084795c'})
+
+
+const getTcgApi = (query) => {
+    return new Promise((resolve, reject) => {
+        if (query == null || query === "") {
+            reject({message: "Empty Query"});
+            return;
+        }
+
+        pokemon.card.all({q: query})
+            .then((cards) => {
+                // Rollup nested fields for tables that suck at nested values
+                let cards_enriched = cards.map((card) => {
+                    card.setReleaseDate = card.set.releaseDate;
+                    card.fullCardNumber = card.number + "/" + card.set.printedTotal;
+                    card.setName = card.set.name;
+                    return card;
+                })
+
+                // Sort by releaseDate by default
+                cards_enriched = cards_enriched.sort((a, b) => (a.setReleaseDate > b.setReleaseDate ? 1 : -1));
+
+                resolve(cards_enriched);
+            })
+            .catch((err) => {
+                reject(err.message);
+            })
+    })
+}
+
+
 const getCollectionSummary = (filter) => {
     // Return collection promise
     return new Promise((resolve, reject) => {
@@ -188,6 +222,7 @@ const things = {
     returnCollectionSummary: returnCollectionSummary,
     getCollectionDetail: getCollectionDetail,
     returnCollectionDetail: returnCollectionDetail,
+    getTcgApi: getTcgApi,
 };
 
 module.exports = things;

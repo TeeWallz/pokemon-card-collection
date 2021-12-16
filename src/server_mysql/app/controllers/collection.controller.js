@@ -44,6 +44,13 @@ exports.getCollectionCards = (req, res) => {
     if('collectionId' in req.query){
         collectionFilter = req.query
     }
+    // CollectionCard.findAll({
+    //     where: collectionFilter,
+    // })
+    //     .then((collectionCards) => {
+    //         res.send(collectionCards)
+    //
+    //     })
 
 
     CollectionCard.findAll({
@@ -60,33 +67,6 @@ exports.getCollectionCards = (req, res) => {
                 as: 'collection',
                 attributes: [],
             },
-            {
-                model: Card,
-                required: false,
-                as: 'card',
-                attributes: [],
-                include: [
-                    {
-                        model: tcgSet,
-                        required: true,
-                        as: 'cardSet',
-                        include: [
-                            {
-                                model: SetLocalisation,
-                                required: true,
-                                as: 'set_localisations',
-                                attributes: [],
-                            }
-                        ]
-                    },
-                    {
-                        model: CardLocalisation,
-                        required: true,
-                        as: 'card_localisations',
-                        attributes: [],
-                    }
-                 ]
-            }
         ],
         attributes: [
             [db.Sequelize.literal('CONCAT("collectionCards"."collectionId", \'/\', "collectionCards"."cardId")'), 'cardKey'],
@@ -94,22 +74,11 @@ exports.getCollectionCards = (req, res) => {
             'cardId',
             'collectionId',
             [db.Sequelize.literal('"collection"."name" '), 'collectionName'],
-            [db.Sequelize.literal('"card"."card_number_int" '), 'card_number_int'],
-            [db.Sequelize.literal('"card"."number" '), 'number'],
-            [db.Sequelize.literal('"card"."number" || \'/\' || "card->cardSet"."printedTotal"'), 'numberFull'],
             'orderNumber',
             'count',
             'purchased',
             [db.Sequelize.literal('(((coalesce("collectionCards"."orderNumber", 0)/18)-(1/18)))+1'), 'binderPageNo'],
             [db.Sequelize.literal('CASE WHEN "collectionCards"."orderNumber" % 18 = 0 THEN 18 ELSE "collectionCards"."orderNumber" % 18 END'), 'binderSlotNo'],
-            [db.Sequelize.literal('"card->card_localisations"."name"'), 'name'],
-            [db.Sequelize.literal('"card"."supertype"'), 'supertype'],
-            [db.Sequelize.literal('"card"."rarity"'), 'rarity'],
-            [db.Sequelize.literal('"card->cardSet"."series"'), 'setSeries'],
-            [db.Sequelize.literal('"card->cardSet"."printedTotal"'), 'setPrintedTotal'],
-            [db.Sequelize.literal('"card->cardSet"."total"'), 'setTotal'],
-            [db.Sequelize.literal('"card->cardSet"."releaseDate"'), 'setReleaseDate'],
-            [db.Sequelize.literal('"card->cardSet->set_localisations"."name"'), 'setName'],
         ]
     })
         .then((collectionCards) => {
@@ -119,6 +88,83 @@ exports.getCollectionCards = (req, res) => {
             console.log(error);
             res.status(500).send(error.message)
         })
+
+
+
+
+    // CollectionCard.findAll({
+    //     where: collectionFilter,
+    //     order: [
+    //         // will return `name`
+    //         [db.Sequelize.literal('"collection"."name" ')],
+    //         ['orderNumber'],
+    //     ],
+    //     include: [
+    //         {
+    //             model: Collection,
+    //             required: false,
+    //             as: 'collection',
+    //             attributes: [],
+    //         },
+    //         {
+    //             model: Card,
+    //             required: false,
+    //             as: 'card',
+    //             attributes: [],
+    //             include: [
+    //                 {
+    //                     model: tcgSet,
+    //                     required: true,
+    //                     as: 'cardSet',
+    //                     include: [
+    //                         {
+    //                             model: SetLocalisation,
+    //                             required: true,
+    //                             as: 'set_localisations',
+    //                             attributes: [],
+    //                         }
+    //                     ]
+    //                 },
+    //                 {
+    //                     model: CardLocalisation,
+    //                     required: true,
+    //                     as: 'card_localisations',
+    //                     attributes: [],
+    //                 }
+    //              ]
+    //         }
+    //     ],
+    //     attributes: [
+    //         [db.Sequelize.literal('CONCAT("collectionCards"."collectionId", \'/\', "collectionCards"."cardId")'), 'cardKey'],
+    //         'collection_card_key',
+    //         'cardId',
+    //         'collectionId',
+    //         [db.Sequelize.literal('"collection"."name" '), 'collectionName'],
+    //         [db.Sequelize.literal('"card"."card_number_int" '), 'card_number_int'],
+    //         [db.Sequelize.literal('"card"."number" '), 'number'],
+    //         [db.Sequelize.literal('"card"."number" || \'/\' || "card->cardSet"."printedTotal"'), 'numberFull'],
+    //         'orderNumber',
+    //         'count',
+    //         'purchased',
+    //         [db.Sequelize.literal('(((coalesce("collectionCards"."orderNumber", 0)/18)-(1/18)))+1'), 'binderPageNo'],
+    //         [db.Sequelize.literal('CASE WHEN "collectionCards"."orderNumber" % 18 = 0 THEN 18 ELSE "collectionCards"."orderNumber" % 18 END'), 'binderSlotNo'],
+    //         [db.Sequelize.literal('"card->card_localisations"."name"'), 'name'],
+    //         [db.Sequelize.literal('"card"."supertype"'), 'supertype'],
+    //         [db.Sequelize.literal('"card"."rarity"'), 'rarity'],
+    //         [db.Sequelize.literal('"card->cardSet"."series"'), 'setSeries'],
+    //         [db.Sequelize.literal('"card->cardSet"."printedTotal"'), 'setPrintedTotal'],
+    //         [db.Sequelize.literal('"card->cardSet"."total"'), 'setTotal'],
+    //         [db.Sequelize.literal('"card->cardSet"."releaseDate"'), 'setReleaseDate'],
+    //         [db.Sequelize.literal('"card->cardSet->set_localisations"."name"'), 'setName'],
+    //     ]
+    // })
+    //     .then((collectionCards) => {
+    //         res.send(collectionCards)
+    //     })
+    //     .catch((error) =>{
+    //         console.log(error);
+    //         res.status(500).send(error.message)
+    //     })
 
 
 }
@@ -346,6 +392,9 @@ async function putCollectionRollback(req, res) {
 
 };
 exports.putCollectionRollback = putCollectionRollback;
+
+
+
 
 
 exports.getFromTcgApiFilter = (req, res) => {
