@@ -8,3 +8,4 @@ export const SET_MESSAGE = "SET_MESSAGE";
 export const CLEAR_MESSAGE = "CLEAR_MESSAGE";
 
 export const SET_TCG_CARDS = "SET_TCG_CARDS";
+export const APPEND_TCG_CARDS = "APPEND_TCG_CARDS";

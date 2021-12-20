@@ -59,6 +59,11 @@ module.exports = function(app) {
         controller.getFromTcgApiFilter
     );
 
+    app.post(
+        "/api/tcgApiQuery",
+        controller.getFromTcgApiFilter
+    );
+
     app.put(
         "/api/collectionCards",
         controller.patchCollectionCards

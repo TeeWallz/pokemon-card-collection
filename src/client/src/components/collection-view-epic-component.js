@@ -19,9 +19,10 @@ import 'react-bootstrap-table2-toolkit/dist/react-bootstrap-table2-toolkit.min.c
 import ToolkitProvider, { Search } from 'react-bootstrap-table2-toolkit';
 import Row from "react-bootstrap/Row";
 import tcgApi from "../reducers/tcgApi";
+import { setCards } from "../actions/tcgApi"
+import {enrichCollectionCardsWithTcgData, getCardsNotInLocal} from "../helpers/tcgApiLocalData";
 const { SearchBar } = Search;
 
-import { logout } from "./actions/";
 
 class CollectionViewEpic extends Component {
     constructor(props) {
@@ -29,6 +30,7 @@ class CollectionViewEpic extends Component {
         this.handleCardCollectedCheckboxClick = this.handleCardCollectedCheckboxClick.bind(this);
         this.handleSaveCollectionButtonClick = this.handleSaveCollectionButtonClick.bind(this);
         this.handleCardPurchasedCheckboxClick = this.handleCardPurchasedCheckboxClick.bind(this);
+        this.loadFilters = this.loadFilters.bind(this);
         // this.cardCollectedToggle = this.cardCollectedToggle.bind(this);
 
         console.log("------------------");
@@ -41,7 +43,7 @@ class CollectionViewEpic extends Component {
             collectionId: this.props.id,
             collectionName: '',
 
-            collectionCards:[{id:"ass", setName:"yeet"}],
+            collectionCards:[],
             changedCards: new Set(),
             checkChanged: true,
             propertyValues: {
@@ -57,45 +59,62 @@ class CollectionViewEpic extends Component {
 
     componentDidMount() {
         let epicFilter = {};
-        if (this.state.collectionId != undefined){
-            epicFilter = {"collectionId":this.state.collectionId }
-            // {collectionId: 'db8a0cd0-558d-11ec-8e83-fdb9d4163a20'}
+        if (this.state.collectionId != undefined) {
+            epicFilter = {"collectionId": this.state.collectionId}
         }
-        console.log( {epicFilter} )
 
         CollectionService.getEpic(epicFilter).then(
             response => {
-                const setNames = [...new Set(response.data.map(item => item.setName))];
-                setNames.sort();
-                const setNamesDict = {};
-                setNames.forEach(item => {
-                    setNamesDict[item] = item
-                });
 
-                const collectionNames = [...new Set(response.data.map(item => item.collectionName))];
-                collectionNames.sort();
-                const collectionNamesDict = {};
-                collectionNames.forEach(item => {
-                    collectionNamesDict[item] = item
-                });
+                let cardIds = [...new Set(response.map(item => item.cardId))];
+                getCardsNotInLocal(cardIds).then((result) => {
 
-                // debugger;
+                    const new_collectionCards = enrichCollectionCardsWithTcgData(this.state.collectionCards)
+                    this.setState({
+                        collectionCards: new_collectionCards,
+                        propertyValues: this.loadFilters(new_collectionCards)
+                    }, () => {
+                        this.forceUpdate();
+                    });
+                })
 
                 this.setState({
-                    collectionCards: response.data,
-                    propertyValues: {
-                        setNames: setNamesDict,
-                        collectionNames: collectionNamesDict,
-                    }
+                    collectionCards: response,
+                    propertyValues: this.loadFilters(response)
+
                 }, () => {
                     // console.log(this.state)
                     this.forceUpdate();
                 });
             },
             error => {
+                console.log(error)
                 alert("Error")
             }
         );
+    }
+
+    loadFilters(cards){
+        const setNames = [...new Set(cards.map(item => item.setName))].sort();
+        const setNamesDict = {};
+        setNames.forEach(item => {
+            setNamesDict[item] = item
+        });
+
+        const setNamesTableFilter = Object.assign({}, ...setNames.map((x) => ({[x]: x})));
+
+
+        const collectionNames = [...new Set(cards.map(item => item.collectionName))].sort();
+        const collectionNamesDict = {};
+        collectionNames.forEach(item => {
+            collectionNamesDict[item] = item
+        });
+
+
+        return {
+            setNames: setNamesDict,
+            collectionNames: collectionNamesDict,
+        }
     }
 
     handleCardCollectedCheckboxClick(e) {
@@ -159,12 +178,24 @@ class CollectionViewEpic extends Component {
         selectOptions = this.state.propertyValues.setNames;
 
         let { collectionCards, filters } = this.state;
-
-        console.log(this.state.propertyValues.setNames)
+        const { tcgApi } = this.props;
         const setNameFilter = filters.setNameFilter ? filters.setNameFilter.filterVal : null;
-        // if (setNameFilter) {
-        //     collectionCards = collectionCards.filter(item => item.setName === setNameFilter);
-        // }
+
+        let collectionName = '';
+        if(this.state.propertyValues.collectionNames != {}){
+            collectionName = Object.keys(this.state.propertyValues.collectionNames)[0];
+        }
+
+        let completion = 0;
+        let collectedCount = this.state.collectionCards.reduce((a, b) => {  return a + b.count; } , 0);
+        if(collectionCards.length > 0){
+            completion = collectedCount / collectionCards.length
+        }
+        completion = completion * 100;
+        completion = Math.round(completion, 2) + '%';
+
+        // ENrich collectionCards with data  from LocalStorage / TCG API
+
 
         const columns = [
 
@@ -357,23 +388,9 @@ class CollectionViewEpic extends Component {
         ];
 
 
-        let collectionName = '';
-        if(this.state.propertyValues.collectionNames != {}){
-            collectionName = Object.keys(this.state.propertyValues.collectionNames)[0];
-        }
 
-        let completion = 0;
-        let collectedCount = this.state.collectionCards.reduce((a, b) => {
-                // console.log(a);
-                // debugger;
-                return a + b.count;
-            }
-            , 0);
-        if(this.state.collectionCards.length > 0){
-            completion = collectedCount / this.state.collectionCards.length
-        }
-        completion = completion * 100;
-        completion = Math.round(completion, 2) + '%';
+
+
 
         return (
             <div className="container-fluid">
@@ -462,7 +479,8 @@ class CollectionViewEpic extends Component {
 }
 
 function mapStateToProps(state) {
-    const { tcgApi } = state.message;
+    const { tcgApi } = state;
+    // debugger;
     return {
         tcgApi,
     };

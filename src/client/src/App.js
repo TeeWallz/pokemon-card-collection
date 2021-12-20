@@ -26,6 +26,7 @@ import NotFound from "./components/NotFound";
 import CollectionViewEpic from "./components/collection-view-epic-component";
 import CollectionViewEpicWrapper from "./components/collections-view-epic.function";
 import CollectionViewWrapper from "./components/collection-view.function";
+import {loadCardsFromLocal} from "./helpers/tcgApiLocalData";
 
 class App extends Component {
   constructor(props) {

@@ -398,7 +398,13 @@ exports.putCollectionRollback = putCollectionRollback;
 
 
 exports.getFromTcgApiFilter = (req, res) => {
-    let query = req.query.query;
+    let query = '';
+    if(req.method == 'GET') {
+        query = req.query.query;
+    }
+    else if(req.method == 'POST') {
+        query = req.body.data.query;
+    }
 
     if(query == null || query === ""){
         res.status(500).send({message:"Empty Query"});

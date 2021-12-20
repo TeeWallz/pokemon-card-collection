@@ -1,5 +1,7 @@
 import axios from 'axios';
 import authHeader from './auth-header';
+import store from "../store";
+import {enrichCollectionCardsWithTcgData} from "../helpers/tcgApiLocalData";
 
 const API_BASE_URL = 'http://localhost:8080/api/';
 const API_URL = 'http://localhost:8080/api/collection';
@@ -10,8 +12,16 @@ class CollectionService {
     }
 
     getEpic(query) {
-        // return axios.get(API_BASE_URL + "epic", { params: {collectionId: 'db8a0cd0-558d-11ec-8e83-fdb9d4163a20'}});
-        return axios.get(API_BASE_URL + "epic", { params: query});
+        return new Promise(function(resolve, reject) {
+            axios.get(API_BASE_URL + "epic", { params: query})
+                .then((epic_cards => {
+                    resolve(enrichCollectionCardsWithTcgData(epic_cards.data))
+                }))
+                .catch((error) => {
+                    reject(error);
+                })
+        });
+
     }
 
     getOneDetail(id) {
@@ -53,6 +63,12 @@ class CollectionService {
     getTcgApiQuery(query){
         return axios.get(API_BASE_URL + 'tcgApiQuery',
             { params: {query:query }}
+            );
+    }
+
+    postTcgApiQuery(query){
+        return axios.post(API_BASE_URL + 'tcgApiQuery',
+            { data: {query:query }}
             );
     }
 
