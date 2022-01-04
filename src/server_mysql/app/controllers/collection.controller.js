@@ -77,7 +77,7 @@ exports.getCollectionCards = (req, res) => {
             'orderNumber',
             'count',
             'purchased',
-            [db.Sequelize.literal('(((coalesce("collectionCards"."orderNumber", 0)/18)-(1/18)))+1'), 'binderPageNo'],
+            [db.Sequelize.literal('(((coalesce("collectionCards"."orderNumber", 0)/18)-(1/18)))'), 'binderPageNo'],
             [db.Sequelize.literal('CASE WHEN "collectionCards"."orderNumber" % 18 = 0 THEN 18 ELSE "collectionCards"."orderNumber" % 18 END'), 'binderSlotNo'],
         ]
     })

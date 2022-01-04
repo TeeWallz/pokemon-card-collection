@@ -340,7 +340,7 @@ class CollectionViewEpic extends Component {
                             data={row.cardId}
                             size="sm"
                         >
-                            {(stateRow.count) ? <i className="bi bi-check-circle-fill"></i> : <i class="bi bi-circle"></i>}
+                            {(stateRow.count) ? <i className="bi bi-check-circle-fill"></i> : <i className="bi bi-circle"></i>}
                             {/*{(stateRow.count) ? <i className="bi bi-check2-circle"></i> : <i className="bi bi-circle"></i>} {stateRow.count}  / {rowIndex}*/}
                         </ToggleButton>
 
@@ -375,7 +375,7 @@ class CollectionViewEpic extends Component {
                             data={row.cardId}
                             size="sm"
                         >
-                            {(stateRow.purchased) ? <i className="bi bi-check-circle-fill"></i> : <i class="bi bi-circle"></i>}
+                            {(stateRow.purchased) ? <i className="bi bi-check-circle-fill"></i> : <i className="bi bi-circle"></i>}
                             {/*{(stateRow.purchased) ? <i className="bi bi-check2-circle"></i> : <i className="bi bi-circle"></i>} {stateRow.purchased}  / {rowIndex}*/}
                         </ToggleButton>
 
@@ -408,7 +408,7 @@ class CollectionViewEpic extends Component {
 
 
                 <Row>
-                    <Col classNames={"col-md-auto"}>
+                    <Col classnames={"col-md-auto"}>
                         <h3>Search for cards:</h3>
                     </Col>
                     <Col xs={1}>

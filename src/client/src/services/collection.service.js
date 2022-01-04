@@ -2,18 +2,20 @@ import axios from 'axios';
 import authHeader from './auth-header';
 import store from "../store";
 import {enrichCollectionCardsWithTcgData} from "../helpers/tcgApiLocalData";
+import { API_URL } from '../config/api_config'
 
-const API_BASE_URL = 'http://localhost:8080/api/';
-const API_URL = 'http://localhost:8080/api/collection';
+// const API_BASE_URL = 'http://localhost:8080/api/';
+// const API_URL = 'http://localhost:8080/api/collection';
 
 class CollectionService {
     getAll() {
-        return axios.get(API_URL);
+        return axios.get(API_URL + "collection");
     }
 
     getEpic(query) {
+        let kek = API_URL;
         return new Promise(function(resolve, reject) {
-            axios.get(API_BASE_URL + "epic", { params: query})
+            axios.get(API_URL + "epic", { params: query})
                 .then((epic_cards => {
                     resolve(enrichCollectionCardsWithTcgData(epic_cards.data))
                 }))
@@ -25,7 +27,7 @@ class CollectionService {
     }
 
     getOneDetail(id) {
-        return axios.get(API_URL + "/" + id);
+        return axios.get(API_URL + "collection/" + id);
 
 
         // return axios
@@ -44,13 +46,13 @@ class CollectionService {
         headers.yeet = 'ass';
 
         return axios
-            .post(API_BASE_URL + 'collection', collection, {headers: headers})
+            .post(API_URL + 'collection', collection, {headers: headers})
             ;
     }
 
     putCollection(id, collection) {
         return axios
-            .put(API_URL + "/" + id,  collection)
+            .put(API_URL + "collection/" + id,  collection)
             .then((response) => {
                 alert("Done!")
             })
@@ -61,13 +63,13 @@ class CollectionService {
     }
 
     getTcgApiQuery(query){
-        return axios.get(API_BASE_URL + 'tcgApiQuery',
+        return axios.get(API_URL + 'tcgApiQuery',
             { params: {query:query }}
             );
     }
 
     postTcgApiQuery(query){
-        return axios.post(API_BASE_URL + 'tcgApiQuery',
+        return axios.post(API_URL + 'tcgApiQuery',
             { data: {query:query }}
             );
     }
@@ -78,7 +80,7 @@ class CollectionService {
 
         // axios.delete(API_BASE_URL + 'collection' + "/" + id)
 
-        return axios.delete(API_BASE_URL + 'collection' + "/" + id, {headers: headers})
+        return axios.delete(API_URL + 'collection' + "/" + id, {headers: headers})
 
     }
 
@@ -87,7 +89,7 @@ class CollectionService {
 
         // axios.delete(API_BASE_URL + 'collection' + "/" + id)
 
-        return axios.put(API_BASE_URL + 'collectionCards', {collectionCards: cards}, {headers: headers})
+        return axios.put(API_URL + 'collectionCards', {collectionCards: cards}, {headers: headers})
     }
 
 

@@ -20,7 +20,7 @@ function showDescription(cell, row) {
 }
 
 function priceFormatter(cell, row){
-    return '<i class="glyphicon glyphicon-usd"></i> ' + cell;
+    return '<i className="glyphicon glyphicon-usd"></i> ' + cell;
 }
 
 

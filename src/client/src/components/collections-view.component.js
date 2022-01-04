@@ -67,7 +67,7 @@ class CollectionView extends Component {
                 data={row.cardId}
                 size="sm"
             >
-                {/*{(card.count) ? <i className="bi bi-check-circle-fill"></i> : <i class="bi bi-circle"></i>}*/}
+                {/*{(card.count) ? <i className="bi bi-check-circle-fill"></i> : <i className="bi bi-circle"></i>}*/}
                 {(row.count) ? <i className="bi bi-check2-circle"></i> : <i className="bi bi-circle"></i>}
             </ToggleButton>
         )
