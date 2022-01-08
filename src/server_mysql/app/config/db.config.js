@@ -1,10 +1,10 @@
 module.exports = {
-    HOST: "localhost",
+    HOST: "docker.tomekwaller.com",
+    PORT: 54322,
     USER: "postgres",
-    // PASSWORD: "root",
-    // DB: "pokemon-site",
+    PASSWORD: "EurGSFYsmNQFW6x4s3S4uFmR8Nr9QZbQ",
     DB: "pokemon-site",
-    SCHEMA: "",
+    SCHEMA: "site_data",
     dialect: "postgres",
     pool: {
         max: 5,
