@@ -1,7 +1,8 @@
 import axios from 'axios';
 import authHeader from './auth-header';
+const config = require('../config/api_config');
 
-const API_URL = 'http://localhost:8080/api/collection/';
+const API_URL = config.API_BASE_URL + 'collection/';
 
 class CollectionService {
     getAll() {
