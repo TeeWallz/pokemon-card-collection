@@ -1,0 +1,7 @@
+version: '3'
+services:
+  pokemon-collection-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pkmn-collection-server/latest
